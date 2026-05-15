@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rb87 Dipole Trap - Scattering Rate Simulator</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 20px; background-color: #f0f2f5; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .layout-grid { display: grid; grid-template-columns: 360px 1fr; gap: 30px; }
+        .sidebar { background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef; height: fit-content; }
+        .control-group { margin-bottom: 20px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee; }
+        label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 0.9em; color: #333; }
+        
+        .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        input[type=number] { width: 85px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+        input[type=range] { flex-grow: 1; accent-color: #28a745; cursor: pointer; }
+        
+        .query-box { margin-top: 25px; padding-top: 15px; border-top: 2px dashed #ddd; }
+        .result-display { margin-top: 15px; padding: 18px; background: #fafff0; border-radius: 10px; border: 1px solid #d4edda; }
+        .result-item { margin-bottom: 12px; }
+        .result-label { font-size: 0.8em; color: #555; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        .result-val { font-size: 1.3em; color: #155724; font-weight: 800; }
+        .unit { font-size: 0.7em; margin-left: 4px; font-weight: normal; color: #666; }
+        
+        #plot { width: 100%; height: 600px; }
+        .formula-card { margin-top: 15px; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; font-size: 0.75em; color: #666; }
+        .warning { color: #d9534f; font-weight: bold; font-size: 0.85em; display: none; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="margin-bottom: 20px; border-bottom: 3px solid #28a745; padding-bottom: 10px;">
+        <h2 style="margin:0;">Rb87 Scattering Rate ($\Gamma_{sc}$) Analysis</h2>
+    </div>
+
+    <div class="layout-grid">
+        <div class="sidebar">
+            <div class="control-group">
+                <label>Laser Power $P$ (mW)</label>
+                <div class="input-row">
+                    <input type="range" id="power-slider" min="0.1" max="200" value="100" step="0.1">
+                    <input type="number" id="power-num" value="100" step="0.1">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Beam Waist $w_0$ (μm)</label>
+                <div class="input-row">
+                    <input type="range" id="waist-slider" min="0.1" max="10" value="5" step="0.1">
+                    <input type="number" id="waist-num" value="5" step="0.1">
+                </div>
+            </div>
+
+            <div class="query-box">
+                <label>🎯 Query Wavelength $\lambda$ (nm)</label>
+                <div class="input-row">
+                    <input type="number" id="query-lambda" value="850" step="0.1" style="width: 100%;">
+                </div>
+                
+                <div class="result-display">
+                    <div class="result-item">
+                        <span class="result-label">Scattering Rate $\Gamma_{sc}$</span>
+                        <span id="res-sc" class="result-val">0.00</span><span class="unit">s⁻¹</span>
+                        <div id="sc-warning" class="warning">Warning: High scattering rate!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="formula-card">
+                <strong>Physics Info:</strong><br>
+                The scattering rate determines the <strong>coherence time</strong> and <strong>heating rate</strong> of the trap.<br>
+                $\Gamma_{sc} \propto \frac{I}{\Delta^2}$
+            </div>
+        </div>
+
+        <div id="plot"></div>
+    </div>
+</div>
+
+<script>
+const PHYSICS = {
+    C: 299792458.0,
+    KB: 1.380649e-23,
+    HBAR: 1.0545718e-34,
+    GAMMA: 2 * Math.PI * 6.066e6,
+    LAM_D1: 794.76e-9,
+    LAM_D2: 780.24e-9,
+
+    getStats: function(wl, p, w0) {
+        const lam = wl * 1e-9;
+        const p_watt = p * 1e-3;
+        const w0_m = w0 * 1e-6;
+        const i0 = (2 * p_watt) / (Math.PI * Math.pow(w0_m, 2));
+        const omega = 2 * Math.PI * this.C / lam;
+        const omega1 = 2 * Math.PI * this.C / this.LAM_D1;
+        const omega2 = 2 * Math.PI * this.C / this.LAM_D2;
+        
+        const prefactor_sc = (Math.PI * Math.pow(this.C, 2) * Math.pow(this.GAMMA, 2)) / (2 * this.HBAR * Math.pow(omega2, 3));
+        const term_sc = (2 / Math.pow(omega - omega2, 2)) + (1 / Math.pow(omega - omega1, 2));
+
+        return {
+            sc: (prefactor_sc * term_sc * i0)
+        };
+    }
+};
+
+function syncAndUpdate(sourceId) {
+    let p = document.getElementById('power-num').value;
+    let w = document.getElementById('waist-num').value;
+    
+    if (sourceId.includes('slider')) {
+        p = document.getElementById('power-slider').value;
+        w = document.getElementById('waist-slider').value;
+        document.getElementById('power-num').value = p;
+        document.getElementById('waist-num').value = w;
+    } else {
+        document.getElementById('power-slider').value = p;
+        document.getElementById('waist-slider').value = w;
+    }
+
+    const qL = parseFloat(document.getElementById('query-lambda').value);
+    const stats = PHYSICS.getStats(qL, parseFloat(p), parseFloat(w));
+    
+    // UI Update
+    document.getElementById('res-sc').innerText = isFinite(stats.sc) ? stats.sc.toExponential(2) : "Infinity (Resonance)";
+    document.getElementById('sc-warning').style.display = stats.sc > 500 ? "block" : "none";
+
+    // Plot Data Generation
+    const x = [], y = [];
+    for (let l = 600; l <= 1000; l += 0.5) {
+        // Skip resonance points to avoid plot spikes that break the scale
+        if (Math.abs(l - 780.24) < 1.0 || Math.abs(l - 794.76) < 1.0) {
+            x.push(l);
+            y.push(null); 
+            continue;
+        }
+        x.push(l);
+        y.push(PHYSICS.getStats(l, p, w).sc);
+    }
+
+    Plotly.react('plot', [
+        { 
+            x: x, 
+            y: y, 
+            mode: 'lines', 
+            line: { color: '#28a745', width: 2.5 }, 
+            fill: 'tozeroy', 
+            fillcolor: 'rgba(40, 167, 69, 0.1)', 
+            name: 'Scattering Rate' 
+        },
+        { 
+            x: [qL], 
+            y: [stats.sc], 
+            mode: 'markers', 
+            marker: { color: '#ff7f0e', size: 12, symbol: 'circle', line: {width: 2, color: 'white'} }, 
+            name: 'Target λ' 
+        }
+    ], {
+        title: { text: 'Scattering Rate vs. Wavelength', font: {size: 18} },
+        xaxis: { title: 'Wavelength (nm)', gridcolor: '#eee' },
+        yaxis: { 
+            title: 'Scattering Rate $\Gamma_{sc}$ (s⁻¹)', 
+            type: 'log',  // 对数坐标轴能清晰观察不同数量级的变化
+            autorange: true,
+            gridcolor: '#eee'
+        },
+        plot_bgcolor: 'white',
+        paper_bgcolor: 'white',
+        margin: { t: 60, r: 30, b: 60, l: 80 },
+        showlegend: false
+    });
+}
+
+['power-slider', 'power-num', 'waist-slider', 'waist-num', 'query-lambda'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => syncAndUpdate(id));
+});
+
+// Initial call
+syncAndUpdate('power-num');
+</script>
+</body>
+</html>

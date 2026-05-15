@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Single-Lens Gaussian Beam Calculator</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9e1ec;
+      --primary: #315efb;
+      --primary-dark: #2447c6;
+      --accent: #0f9f78;
+      --warn: #b54708;
+      --shadow: 0 18px 45px rgba(32, 44, 84, 0.10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(49, 94, 251, 0.16), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(15, 159, 120, 0.13), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 34px 24px 18px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(217, 225, 236, 0.78);
+      box-shadow: var(--shadow);
+      border-radius: 30px;
+      padding: 30px;
+      backdrop-filter: blur(12px);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(26px, 4vw, 42px);
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 980px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+      gap: 22px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 24px 42px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 22px;
+      position: sticky;
+      top: 18px;
+      align-self: start;
+    }
+
+    .controls h2, .panel h2 {
+      font-size: 18px;
+      margin: 0 0 16px;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 650;
+      color: #344054;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid #cdd6e3;
+      background: #fbfcff;
+      border-radius: 13px;
+      padding: 11px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: 0.18s ease;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(49, 94, 251, 0.10);
+      background: white;
+    }
+
+    .field { margin-bottom: 13px; }
+
+    .unit-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 5px;
+      line-height: 1.45;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 750;
+      font-size: 14px;
+      transition: 0.16s ease;
+    }
+
+    .primary {
+      background: var(--primary);
+      color: white;
+      flex: 1;
+    }
+
+    .primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+    .secondary {
+      background: #eef2f8;
+      color: #314056;
+    }
+
+    .secondary:hover { background: #e1e7f0; }
+
+    .formula {
+      margin-top: 18px;
+      padding: 14px;
+      background: #f8faff;
+      border: 1px solid #e5ebf5;
+      border-radius: 16px;
+      color: #314056;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .formula code {
+      display: block;
+      font-family: "Times New Roman", Cambria, Georgia, serif;
+      font-size: 16px;
+      color: #14213d;
+      background: white;
+      border: 1px solid #e5ebf5;
+      padding: 9px 10px;
+      border-radius: 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .formula sub {
+      font-size: 70%;
+      vertical-align: sub;
+      line-height: 0;
+    }
+
+    .formula sup {
+      font-size: 70%;
+      vertical-align: super;
+      line-height: 0;
+    }
+
+    .content {
+      display: grid;
+      gap: 22px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      padding: 18px;
+    }
+
+    .metric .k {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .metric .v {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      overflow-wrap: anywhere;
+    }
+
+    .metric .s {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+
+    .panel p {
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 360px;
+      display: block;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff, #fbfcff);
+      border: 1px solid #edf1f7;
+    }
+
+    #beamCanvas { height: 420px; }
+
+    .error, .warning {
+      display: none;
+      margin-top: 14px;
+      border-radius: 14px;
+      padding: 11px 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .error {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: var(--warn);
+    }
+
+    .warning {
+      background: #fffbea;
+      border: 1px solid #facc15;
+      color: #854d0e;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 22px;
+      height: 3px;
+      border-radius: 99px;
+      display: inline-block;
+      background: #111;
+    }
+
+    .blue { background: #315efb; }
+    .green { background: #0f9f78; }
+    .orange { background: #e8710a; }
+    .gray { background: #667085; }
+
+    footer {
+      max-width: 1280px;
+      padding: 0 24px 36px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 980px) {
+      main { grid-template-columns: 1fr; }
+      .controls { position: static; }
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      header, main, footer { padding-left: 14px; padding-right: 14px; }
+      .hero { padding: 22px; }
+      .grid2, .summary { grid-template-columns: 1fr; }
+      canvas { height: 310px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <section class="hero">
+      <h1>Single-Lens Gaussian Beam Calculator</h1>
+      <p class="subtitle">
+        Enter the incident beam waist position, waist radius, wavelength, and lens focal length. The app scans the lens position and calculates the new waist radius and new waist position after an ideal thin lens. Beam radius is defined as the 1/e² intensity radius.
+      </p>
+    </section>
+  </header>
+
+  <main>
+    <aside class="card controls">
+      <h2>Input Parameters</h2>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="lambdaNm">Wavelength λ / nm</label>
+          <input id="lambdaNm" type="number" value="1012" step="0.1" />
+        </div>
+        <div class="field">
+          <label for="w0Um">Incident waist radius w₀ / μm</label>
+          <input id="w0Um" type="number" value="500.00" step="0.01" />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="z0Mm">Incident waist position z₀ / mm</label>
+          <input id="z0Mm" type="number" value="0" step="1" />
+          <div class="unit-note">Global coordinate. You may set the original waist at z = 0.</div>
+        </div>
+        <div class="field">
+          <label for="fMm">Lens focal length f / mm</label>
+          <input id="fMm" type="number" value="200" step="1" />
+          <div class="unit-note">Positive for a converging lens, negative for a diverging lens.</div>
+        </div>
+      </div>
+
+      <h2 style="margin-top: 22px;">Scan Lens Position</h2>
+      <div class="grid2">
+        <div class="field">
+          <label for="scanMinMm">z<sub>L</sub> start / mm</label>
+          <input id="scanMinMm" type="number" value="-500" step="10" />
+        </div>
+        <div class="field">
+          <label for="scanMaxMm">z<sub>L</sub> end / mm</label>
+          <input id="scanMaxMm" type="number" value="500" step="10" />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="points">Number of samples</label>
+          <input id="points" type="number" value="401" min="30" max="3000" step="1" />
+        </div>
+        <div class="field">
+          <label for="selectedLensMm">Lens position for beam plot / mm</label>
+          <input id="selectedLensMm" type="number" value="100" step="10" />
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button class="primary" id="calcBtn">Calculate and Plot</button>
+        <button class="secondary" id="resetBtn">Reset</button>
+      </div>
+
+      <h2 style="margin-top: 22px;">Query a Lens Position</h2>
+      <div class="field">
+        <label for="queryLensMm">Query lens position z<sub>L</sub> / mm</label>
+        <input id="queryLensMm" type="number" value="100" step="0.01" />
+        <div class="unit-note">Enter a lens position to read out the corresponding new waist radius and position.</div>
+      </div>
+      <div class="button-row" style="margin-top: 8px;">
+        <button class="primary" id="queryBtn">Query Value</button>
+      </div>
+      <div class="formula" id="queryResult" style="margin-top: 12px;">
+        <strong>Query Result</strong>
+        <code>Run calculation first, then query a lens position.</code>
+      </div>
+
+      <div class="error" id="errorBox"></div>
+      <div class="warning" id="warningBox"></div>
+
+      <div class="formula">
+        <strong>Calculation Convention</strong>
+        <code><i>q</i><sub>in</sub>(<i>z</i><sub>L</sub>) = (<i>z</i><sub>L</sub> − <i>z</i><sub>0</sub>) + <i>i z</i><sub>R</sub></code>
+        <code><i>z</i><sub>R</sub> = π<i>w</i><sub>0</sub><sup>2</sup> / λ</code>
+        <code>1/<i>q</i><sub>out</sub> = 1/<i>q</i><sub>in</sub> − 1/<i>f</i></code>
+        <code><i>q</i><sub>out</sub> = <i>a</i> + <i>i b</i></code>
+        <code><i>z</i><sub>new</sub> = <i>z</i><sub>L</sub> − <i>a</i>, &nbsp; <i>w</i><sub>new</sub> = √(λ<i>b</i>/π)</code>
+      </div>
+    </aside>
+
+    <section class="content">
+      <section class="summary">
+        <div class="card metric">
+          <div class="k">Incident Rayleigh length</div>
+          <div class="v" id="zRMetric">—</div>
+          <div class="s">Determined by the incident waist and wavelength</div>
+        </div>
+        <div class="card metric">
+          <div class="k">Current new waist radius</div>
+          <div class="v" id="wMetric">—</div>
+          <div class="s">For the selected lens position</div>
+        </div>
+        <div class="card metric">
+          <div class="k">Current new waist position</div>
+          <div class="v" id="zMetric">—</div>
+          <div class="s">Global z coordinate</div>
+        </div>
+        <div class="card metric">
+          <div class="k">Distance from lens</div>
+          <div class="v" id="relMetric">—</div>
+          <div class="s">Positive means the new waist is after the lens</div>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-header">
+          <div>
+            <h2>New Waist Radius vs. Lens Position</h2>
+            <p>The horizontal axis is the lens position z<sub>L</sub>; the vertical axis is the new waist radius after the lens.</p>
+          </div>
+        </div>
+        <canvas id="waistCanvas"></canvas>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-header">
+          <div>
+            <h2>New Waist Position vs. Lens Position</h2>
+            <p>The blue curve is the global new waist position z<sub>new</sub>; the green curve is the distance from the lens, z<sub>new</sub> − z<sub>L</sub>.</p>
+          </div>
+        </div>
+        <canvas id="positionCanvas"></canvas>
+        <div class="legend">
+          <span><i class="swatch blue"></i>Global new waist position z<sub>new</sub></span>
+          <span><i class="swatch green"></i>Distance from lens z<sub>new</sub> − z<sub>L</sub></span>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-header">
+          <div>
+            <h2>Beam Envelope at the Selected Lens Position</h2>
+            <p>The orange vertical line is the lens, the gray dashed line is the incident waist, and the green dashed line is the new waist after the lens.</p>
+          </div>
+        </div>
+        <canvas id="beamCanvas"></canvas>
+        <div class="legend">
+          <span><i class="swatch blue"></i>Beam 1/e² radius envelope</span>
+          <span><i class="swatch orange"></i>Lens</span>
+          <span><i class="swatch gray"></i>Incident waist</span>
+          <span><i class="swatch green"></i>New waist</span>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    Note: This page uses an ideal thin-lens model and an ideal TEM00 Gaussian beam. It does not include M², aberrations, aperture clipping, or refractive-index effects. If your measured beam size is an FWHM diameter or a 1/e² diameter, convert it to the 1/e² radius before entering it here.
+  </footer>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const defaults = {
+      lambdaNm: 1012,
+      w0Um: 500.00,
+      z0Mm: 0,
+      fMm: 200,
+      scanMinMm: -500,
+      scanMaxMm: 500,
+      points: 401,
+      selectedLensMm: 100,
+      queryLensMm: 100
+    };
+
+    // Numerical safety thresholds. These do not change the physics; they only
+    // prevent near-singular cases from destroying the plotted coordinate ranges.
+    const MAX_PLOT_POSITION_MM = 1e7;
+    const MAX_PLOT_RADIUS_UM = 1e7;
+    const MIN_LENS_DENOMINATOR = 1e-18;
+
+    function complexDiv(a, b, c, d) {
+      const den = c * c + d * d;
+      return [(a * c + b * d) / den, (b * c - a * d) / den];
+    }
+
+    function lensTransform(qRe, qIm, f) {
+      // 1/q_out = 1/q_in - 1/f
+      const den = qRe * qRe + qIm * qIm;
+      const invRe = qRe / den - 1 / f;
+      const invIm = -qIm / den;
+      const lensDenominator = invRe * invRe + invIm * invIm;
+
+      if (!Number.isFinite(lensDenominator) || lensDenominator < MIN_LENS_DENOMINATOR) {
+        return {
+          qRe: NaN,
+          qIm: NaN,
+          lensDenominator,
+          nearSingular: true
+        };
+      }
+
+      const [outRe, outIm] = complexDiv(1, 0, invRe, invIm);
+      return {
+        qRe: outRe,
+        qIm: outIm,
+        lensDenominator,
+        nearSingular: lensDenominator < 100 * MIN_LENS_DENOMINATOR
+      };
+    }
+
+    function calculateOne(params, zLmm) {
+      const lambda = params.lambdaNm * 1e-6; // nm -> mm
+      const w0 = params.w0Um * 1e-3;        // um -> mm
+      const zR = Math.PI * w0 * w0 / lambda;
+      const s = zLmm - params.z0Mm;
+      const t = lensTransform(s, zR, params.fMm);
+      const a = t.qRe;
+      const b = t.qIm;
+      const zNew = zLmm - a;
+      const rel = -a;
+      const wNew = b > 0 ? Math.sqrt(lambda * b / Math.PI) : NaN;
+
+      const finite = [zR, a, b, zNew, rel, wNew].every(Number.isFinite);
+      const tooLarge = finite && (
+        Math.abs(zNew) > MAX_PLOT_POSITION_MM ||
+        Math.abs(rel) > MAX_PLOT_POSITION_MM ||
+        Math.abs(b) > MAX_PLOT_POSITION_MM ||
+        Math.abs(wNew * 1000) > MAX_PLOT_RADIUS_UM
+      );
+      const validForPlot = finite && b > 0 && !tooLarge && !t.nearSingular;
+
+      return {
+        zL: zLmm,
+        zR,
+        qOutRe: a,
+        qOutIm: b,
+        zNew,
+        rel,
+        wNewMm: wNew,
+        wNewUm: wNew * 1000,
+        validForPlot,
+        tooLarge,
+        nearSingular: t.nearSingular,
+        lensDenominator: t.lensDenominator
+      };
+    }
+
+    function readParams() {
+      const p = {};
+      for (const k of Object.keys(defaults)) {
+        p[k] = Number($(k).value);
+      }
+      return p;
+    }
+
+    function validate(p) {
+      const errors = [];
+      if (!(p.lambdaNm > 0)) errors.push("Wavelength λ must be positive.");
+      if (!(p.w0Um > 0)) errors.push("Waist radius w₀ must be positive.");
+      if (!Number.isFinite(p.z0Mm)) errors.push("Incident waist position z₀ must be a valid number.");
+      if (!Number.isFinite(p.fMm) || p.fMm === 0) errors.push("Focal length f must be a valid nonzero number.");
+      if (!Number.isFinite(p.scanMinMm) || !Number.isFinite(p.scanMaxMm)) errors.push("The scan range must contain valid numbers.");
+      if (p.scanMaxMm <= p.scanMinMm) errors.push("The scan end must be greater than the scan start.");
+      if (!(p.points >= 30 && p.points <= 3000)) errors.push("The number of samples must be between 30 and 3000.");
+      if (!Number.isFinite(p.selectedLensMm)) errors.push("The selected lens position must be a valid number.");
+      return errors;
+    }
+
+    function formatNumber(x, digits = 3) {
+      if (!Number.isFinite(x)) return "—";
+      const ax = Math.abs(x);
+      if (ax !== 0 && (ax >= 1e4 || ax < 1e-2)) return x.toExponential(2);
+      return x.toLocaleString("en-US", { maximumFractionDigits: digits });
+    }
+
+    function setError(messages) {
+      const box = $("errorBox");
+      if (!messages.length) {
+        box.style.display = "none";
+        box.textContent = "";
+      } else {
+        box.style.display = "block";
+        box.innerHTML = messages.map(m => `• ${m}`).join("<br>");
+      }
+    }
+
+    function setWarning(messages) {
+      const box = $("warningBox");
+      if (!messages.length) {
+        box.style.display = "none";
+        box.textContent = "";
+      } else {
+        box.style.display = "block";
+        box.innerHTML = messages.map(m => `• ${m}`).join("<br>");
+      }
+    }
+
+    function updateQueryResult() {
+      const box = $("queryResult");
+      const p = readParams();
+      const errors = validate(p);
+      const zQuery = p.queryLensMm;
+
+      if (errors.length || !Number.isFinite(zQuery)) {
+        box.innerHTML = `
+          <strong>Query Result</strong>
+          <code>Invalid input. Please check the parameters above.</code>
+        `;
+        return;
+      }
+
+      const q = calculateOne(p, zQuery);
+      if (!q.validForPlot) {
+        box.innerHTML = `
+          <strong>Query Result</strong>
+          <code><i>z</i><sub>L</sub> = ${formatNumber(zQuery, 6)} mm</code>
+          <code>Result: unstable or too large for reliable plotting</code>
+          <code>Near singular: ${q.nearSingular ? "yes" : "no"}</code>
+        `;
+        return;
+      }
+
+      box.innerHTML = `
+        <strong>Query Result</strong>
+        <code><i>z</i><sub>L</sub> = ${formatNumber(q.zL, 6)} mm</code>
+        <code><i>w</i><sub>new</sub> = ${formatNumber(q.wNewUm, 6)} μm</code>
+        <code><i>z</i><sub>new</sub> = ${formatNumber(q.zNew, 6)} mm</code>
+        <code><i>z</i><sub>new</sub> − <i>z</i><sub>L</sub> = ${formatNumber(q.rel, 6)} mm</code>
+      `;
+    }
+
+    function buildWarnings(data, selected) {
+      const warnings = [];
+      const badCount = data.filter(d => !d.validForPlot).length;
+      if (badCount > 0) {
+        warnings.push(`${badCount} scanned point(s) were omitted from the plots because the lens transform is near-singular or the resulting waist position/radius is too large for stable plotting.`);
+      }
+      if (!selected.validForPlot) {
+        warnings.push("The selected lens position gives an unstable or extremely large result. The beam-envelope plot is disabled for this selected position.");
+      }
+      if (selected.nearSingular) {
+        warnings.push("Near-singular condition detected: |1/qin − 1/f| is too close to zero, so qout can become numerically enormous.");
+      }
+      return warnings;
+    }
+
+    function makeData(p) {
+      const n = Math.round(p.points);
+      const data = [];
+      for (let i = 0; i < n; i++) {
+        const t = i / (n - 1);
+        const zL = p.scanMinMm + t * (p.scanMaxMm - p.scanMinMm);
+        data.push(calculateOne(p, zL));
+      }
+      return data;
+    }
+
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, width: rect.width, height: rect.height };
+    }
+
+    function paddedRange(values, pad = 0.08) {
+      let min = Infinity, max = -Infinity;
+      for (const v of values) {
+        if (Number.isFinite(v) && Math.abs(v) < 1e12) {
+          min = Math.min(min, v);
+          max = Math.max(max, v);
+        }
+      }
+      if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1];
+      if (min === max) {
+        const delta = Math.max(Math.abs(min) * 0.2, 1);
+        return [min - delta, max + delta];
+      }
+      const span = max - min;
+      return [min - span * pad, max + span * pad];
+    }
+
+    function niceTicks(min, max, count = 5) {
+      const span = max - min;
+      if (!(span > 0)) return [min];
+      const raw = span / Math.max(1, count - 1);
+      const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const norm = raw / mag;
+      let step;
+      if (norm < 1.5) step = 1 * mag;
+      else if (norm < 3) step = 2 * mag;
+      else if (norm < 7) step = 5 * mag;
+      else step = 10 * mag;
+      const start = Math.ceil(min / step) * step;
+      const ticks = [];
+      for (let v = start; v <= max + step * 0.5; v += step) ticks.push(v);
+      return ticks.slice(0, 10);
+    }
+
+    function drawAxes(ctx, plot, xMin, xMax, yMin, yMax, xLabel, yLabel) {
+      ctx.clearRect(0, 0, plot.fullWidth, plot.fullHeight);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, plot.fullWidth, plot.fullHeight);
+
+      const xToPx = x => plot.left + (x - xMin) / (xMax - xMin) * plot.w;
+      const yToPx = y => plot.top + (yMax - y) / (yMax - yMin) * plot.h;
+
+      ctx.save();
+      ctx.strokeStyle = "#edf1f7";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+
+      for (const x of niceTicks(xMin, xMax)) {
+        const px = xToPx(x);
+        ctx.beginPath();
+        ctx.moveTo(px, plot.top);
+        ctx.lineTo(px, plot.top + plot.h);
+        ctx.stroke();
+        ctx.fillText(formatNumber(x, 2), px, plot.top + plot.h + 9);
+      }
+
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (const y of niceTicks(yMin, yMax)) {
+        const py = yToPx(y);
+        ctx.beginPath();
+        ctx.moveTo(plot.left, py);
+        ctx.lineTo(plot.left + plot.w, py);
+        ctx.stroke();
+        ctx.fillText(formatNumber(y, 2), plot.left - 9, py);
+      }
+
+      ctx.strokeStyle = "#cdd6e3";
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(plot.left, plot.top, plot.w, plot.h);
+
+      ctx.fillStyle = "#344054";
+      ctx.font = "13px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(xLabel, plot.left + plot.w / 2, plot.fullHeight - 7);
+
+      ctx.save();
+      ctx.translate(14, plot.top + plot.h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(yLabel, 0, 0);
+      ctx.restore();
+
+      ctx.restore();
+      return { xToPx, yToPx };
+    }
+
+    function drawMessage(canvas, message) {
+      const { ctx, width, height } = setupCanvas(canvas);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = "#667085";
+      ctx.font = "14px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(message, width / 2, height / 2);
+    }
+
+    function drawLineChart(canvas, series, options) {
+      const finitePointCount = series.reduce((sum, s) => sum + s.y.filter(Number.isFinite).length, 0);
+      if (finitePointCount < 2) {
+        drawMessage(canvas, "No stable data points are available for plotting.");
+        return;
+      }
+
+      const { ctx, width, height } = setupCanvas(canvas);
+      const plot = { left: 76, right: 22, top: 25, bottom: 54, fullWidth: width, fullHeight: height };
+      plot.w = width - plot.left - plot.right;
+      plot.h = height - plot.top - plot.bottom;
+
+      const allY = [];
+      for (const s of series) allY.push(...s.y);
+      const [xMin, xMax] = paddedRange(series[0].x, 0.02);
+      const [yMin, yMax] = paddedRange(allY, 0.09);
+      const { xToPx, yToPx } = drawAxes(ctx, plot, xMin, xMax, yMin, yMax, options.xLabel, options.yLabel);
+
+      for (const s of series) {
+        ctx.save();
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.width || 2.4;
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i < s.x.length; i++) {
+          const x = s.x[i], y = s.y[i];
+          if (!Number.isFinite(x) || !Number.isFinite(y)) {
+            started = false;
+            continue;
+          }
+          const px = xToPx(x), py = yToPx(y);
+          if (!started) { ctx.moveTo(px, py); started = true; }
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      if (Number.isFinite(options.markerX)) {
+        const mx = xToPx(options.markerX);
+        if (mx >= plot.left && mx <= plot.left + plot.w) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(232, 113, 10, 0.75)";
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 5]);
+          ctx.beginPath();
+          ctx.moveTo(mx, plot.top);
+          ctx.lineTo(mx, plot.top + plot.h);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+    }
+
+    function drawBeamEnvelope(canvas, p, selected) {
+      if (!selected.validForPlot) {
+        drawMessage(canvas, "The selected lens position is numerically unstable. Try another lens position or a smaller scan range.");
+        return;
+      }
+
+      const { ctx, width, height } = setupCanvas(canvas);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+
+      const lambda = p.lambdaNm * 1e-6;
+      const w0 = p.w0Um * 1e-3;
+      const zR = Math.PI * w0 * w0 / lambda;
+      const postZR = selected.qOutIm;
+      const postW0 = selected.wNewMm;
+      const zNew = selected.zNew;
+      const zLens = selected.zL;
+
+      let xMin = Math.min(p.z0Mm - 1.2 * zR, zLens - 0.5 * Math.abs(p.fMm), zNew - 1.2 * postZR);
+      let xMax = Math.max(p.z0Mm + 1.2 * zR, zLens + 1.8 * Math.abs(p.fMm), zNew + 1.2 * postZR);
+      if (xMax - xMin < Math.abs(p.fMm) * 2) {
+        const mid = 0.5 * (xMin + xMax);
+        xMin = mid - Math.abs(p.fMm);
+        xMax = mid + Math.abs(p.fMm);
+      }
+
+      const sampleN = 800;
+      const lensGap = Math.max((xMax - xMin) / sampleN, 1e-9);
+      const preUpper = [];
+      const postUpper = [];
+      const allUpper = [];
+      let yMax = 0;
+
+      function addBeamPoint(target, z, w) {
+        if (!Number.isFinite(z) || !Number.isFinite(w)) return;
+        target.push({ z, w });
+        allUpper.push({ z, w });
+        yMax = Math.max(yMax, w);
+      }
+
+      for (let i = 0; i < sampleN; i++) {
+        const t = i / (sampleN - 1);
+        const z = xMin + t * (xMax - xMin);
+
+        // Skip a narrow interval around the lens plane. This avoids using the
+        // exact lens position as a sampled envelope point and keeps the curve
+        // visually broken at the thin lens.
+        if (Math.abs(z - zLens) <= lensGap) continue;
+
+        if (z < zLens) {
+          const w = w0 * Math.sqrt(1 + Math.pow((z - p.z0Mm) / zR, 2));
+          addBeamPoint(preUpper, z, w);
+        } else {
+          const w = postW0 * Math.sqrt(1 + Math.pow((z - zNew) / postZR, 2));
+          addBeamPoint(postUpper, z, w);
+        }
+      }
+
+      if (allUpper.length < 2 || !(yMax > 0)) {
+        drawMessage(canvas, "No stable beam-envelope points are available after skipping the lens plane.");
+        return;
+      }
+
+      yMax *= 1.18;
+
+      const plot = { left: 72, right: 24, top: 24, bottom: 55, fullWidth: width, fullHeight: height };
+      plot.w = width - plot.left - plot.right;
+      plot.h = height - plot.top - plot.bottom;
+      const xToPx = x => plot.left + (x - xMin) / (xMax - xMin) * plot.w;
+      const yToPx = y => plot.top + (yMax - y) / (2 * yMax) * plot.h;
+
+      ctx.save();
+      ctx.strokeStyle = "#edf1f7";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      for (const x of niceTicks(xMin, xMax, 6)) {
+        const px = xToPx(x);
+        ctx.beginPath();
+        ctx.moveTo(px, plot.top);
+        ctx.lineTo(px, plot.top + plot.h);
+        ctx.stroke();
+        ctx.fillText(formatNumber(x, 1), px, plot.top + plot.h + 9);
+      }
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (const y of niceTicks(-yMax, yMax, 7)) {
+        const py = yToPx(y);
+        ctx.beginPath();
+        ctx.moveTo(plot.left, py);
+        ctx.lineTo(plot.left + plot.w, py);
+        ctx.stroke();
+        ctx.fillText(formatNumber(y * 1000, 0), plot.left - 9, py);
+      }
+      ctx.strokeStyle = "#cdd6e3";
+      ctx.strokeRect(plot.left, plot.top, plot.w, plot.h);
+      ctx.fillStyle = "#344054";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.font = "13px ui-sans-serif, system-ui";
+      ctx.fillText("z / mm", plot.left + plot.w / 2, height - 7);
+      ctx.save();
+      ctx.translate(14, plot.top + plot.h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("Beam radius w / μm", 0, 0);
+      ctx.restore();
+      ctx.restore();
+
+      // Optical axis
+      ctx.save();
+      ctx.strokeStyle = "#aab4c3";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(plot.left, yToPx(0));
+      ctx.lineTo(plot.left + plot.w, yToPx(0));
+      ctx.stroke();
+      ctx.restore();
+
+      // Beam envelope fill and lines. Draw the two sides separately so the
+      // envelope is explicitly broken at the thin-lens plane.
+      function drawEnvelopeSegment(segment) {
+        if (segment.length < 2) return;
+
+        ctx.beginPath();
+        for (let i = 0; i < segment.length; i++) {
+          const pt = segment[i];
+          const px = xToPx(pt.z);
+          const py = yToPx(pt.w);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        for (let i = segment.length - 1; i >= 0; i--) {
+          const pt = segment[i];
+          ctx.lineTo(xToPx(pt.z), yToPx(-pt.w));
+        }
+        ctx.closePath();
+        ctx.fillStyle = "rgba(49, 94, 251, 0.10)";
+        ctx.fill();
+
+        ctx.strokeStyle = "#315efb";
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        segment.forEach((pt, i) => {
+          const px = xToPx(pt.z), py = yToPx(pt.w);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+
+        ctx.beginPath();
+        segment.forEach((pt, i) => {
+          const px = xToPx(pt.z), py = yToPx(-pt.w);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+      }
+
+      ctx.save();
+      drawEnvelopeSegment(preUpper);
+      drawEnvelopeSegment(postUpper);
+      ctx.restore();
+
+      function drawVertical(z, color, label, dash = []) {
+        const px = xToPx(z);
+        if (px < plot.left || px > plot.left + plot.w) return;
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        ctx.moveTo(px, plot.top);
+        ctx.lineTo(px, plot.top + plot.h);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = "12px ui-sans-serif, system-ui";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(label, px, plot.top + 7);
+        ctx.restore();
+      }
+
+      drawVertical(zLens, "#e8710a", "Lens", []);
+      drawVertical(p.z0Mm, "#667085", "incident waist", [5, 5]);
+      drawVertical(zNew, "#0f9f78", "new waist", [5, 5]);
+    }
+
+    function calculateAndDraw() {
+      const p = readParams();
+      const errors = validate(p);
+      setError(errors);
+      if (errors.length) {
+        setWarning([]);
+        return;
+      }
+
+      const data = makeData(p);
+      const selected = calculateOne(p, p.selectedLensMm);
+      setWarning(buildWarnings(data, selected));
+      $("zRMetric").textContent = `${formatNumber(selected.zR, 3)} mm`;
+      $("wMetric").textContent = selected.validForPlot ? `${formatNumber(selected.wNewUm, 3)} μm` : "unstable";
+      $("zMetric").textContent = selected.validForPlot ? `${formatNumber(selected.zNew, 3)} mm` : "unstable";
+      $("relMetric").textContent = selected.validForPlot ? `${formatNumber(selected.rel, 3)} mm` : "unstable";
+
+      const x = data.map(d => d.validForPlot ? d.zL : NaN);
+      drawLineChart($("waistCanvas"), [
+        { x, y: data.map(d => d.validForPlot ? d.wNewUm : NaN), color: "#315efb" }
+      ], {
+        xLabel: "Lens position zL / mm",
+        yLabel: "New waist radius / μm",
+        markerX: p.selectedLensMm
+      });
+
+      drawLineChart($("positionCanvas"), [
+        { x, y: data.map(d => d.validForPlot ? d.zNew : NaN), color: "#315efb" },
+        { x, y: data.map(d => d.validForPlot ? d.rel : NaN), color: "#0f9f78" }
+      ], {
+        xLabel: "Lens position zL / mm",
+        yLabel: "Position / mm",
+        markerX: p.selectedLensMm
+      });
+
+      drawBeamEnvelope($("beamCanvas"), p, selected);
+      updateQueryResult();
+    }
+
+    function reset() {
+      for (const [k, v] of Object.entries(defaults)) $(k).value = v;
+      calculateAndDraw();
+    }
+
+    $("calcBtn").addEventListener("click", calculateAndDraw);
+    $("resetBtn").addEventListener("click", reset);
+    $("queryBtn").addEventListener("click", updateQueryResult);
+
+    for (const k of Object.keys(defaults)) {
+      $(k).addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          if (k === "queryLensMm") updateQueryResult();
+          else calculateAndDraw();
+        }
+      });
+    }
+
+    window.addEventListener("resize", () => {
+      clearTimeout(window.__resizeTimer);
+      window.__resizeTimer = setTimeout(calculateAndDraw, 100);
+    });
+
+    calculateAndDraw();
+  </script>
+</body>
+</html>

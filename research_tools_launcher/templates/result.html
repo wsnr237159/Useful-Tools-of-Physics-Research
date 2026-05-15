@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Run Result - {{ tool.name }}{% endblock %}
+
+{% block content %}
+<section class="detail-layout">
+  <a class="back-link" href="{{ url_for('tool_detail', tool_id=tool.id) }}">Back to {{ tool.name }}</a>
+
+  <div class="result-header {% if result.ok %}success{% else %}failure{% endif %}">
+    <div>
+      <p class="eyebrow">{{ category.name }} / {{ group.name }}</p>
+      <h1>{{ "Run Complete" if result.ok else "Run Finished With Issues" }}</h1>
+      <p>{{ tool.name }}</p>
+    </div>
+    <span class="status-pill">{{ "Success" if result.ok else "Check Output" }}</span>
+  </div>
+
+  <dl class="meta-grid">
+    <div>
+      <dt>Exit Code</dt>
+      <dd>{{ result.exit_code if result.exit_code is not none else "Timeout" }}</dd>
+    </div>
+    <div>
+      <dt>Duration</dt>
+      <dd>{{ "%.3f"|format(result.duration_seconds) }} s</dd>
+    </div>
+    <div>
+      <dt>Output Directory</dt>
+      <dd><code>{{ result.output_dir }}</code></dd>
+    </div>
+  </dl>
+
+  <section class="output-block">
+    <h2>Command</h2>
+    <pre><code>{{ result.command|join(" ") }}</code></pre>
+  </section>
+
+  <section class="output-block">
+    <h2>Standard Output</h2>
+    <pre><code>{{ result.stdout or "(empty)" }}</code></pre>
+  </section>
+
+  <section class="output-block">
+    <h2>Standard Error</h2>
+    <pre><code>{{ result.stderr or "(empty)" }}</code></pre>
+  </section>
+
+  <section class="output-block">
+    <h2>Output Files</h2>
+    {% if result.output_files %}
+      <ul class="file-list">
+        {% for file in result.output_files %}
+          <li><code>{{ file }}</code></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No output files were created.</p>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

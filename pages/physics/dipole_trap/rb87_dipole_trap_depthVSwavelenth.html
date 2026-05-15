@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rb87 Dipole Trap - Precision & Lifetime Simulator</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 20px; background-color: #f0f2f5; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .layout-grid { display: grid; grid-template-columns: 360px 1fr; gap: 30px; }
+        .sidebar { background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef; height: fit-content; }
+        .control-group { margin-bottom: 20px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee; }
+        label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 0.9em; color: #333; }
+        
+        .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        input[type=number] { width: 85px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+        input[type=range] { flex-grow: 1; accent-color: #007bff; cursor: pointer; }
+        
+        .query-box { margin-top: 25px; padding-top: 15px; border-top: 2px dashed #ddd; }
+        .result-display { margin-top: 15px; padding: 18px; background: #f0f7ff; border-radius: 10px; border: 1px solid #b3d7ff; }
+        .result-item { margin-bottom: 12px; }
+        .result-label { font-size: 0.8em; color: #555; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        .result-val { font-size: 1.3em; color: #0056b3; font-weight: 800; }
+        .unit { font-size: 0.7em; margin-left: 4px; font-weight: normal; color: #666; }
+        
+        #plot { width: 100%; height: 600px; }
+        .formula-card { margin-top: 15px; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; font-size: 0.75em; color: #666; }
+        .warning { color: #d9534f; font-weight: bold; font-size: 0.85em; display: none; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="margin-bottom: 20px; border-bottom: 3px solid #007bff; padding-bottom: 10px;">
+        <h2 style="margin:0;">Rb87 Trap Depth & Scattering Rate</h2>
+    </div>
+
+    <div class="layout-grid">
+        <div class="sidebar">
+            <div class="control-group">
+                <label>Laser Power $P$ (mW)</label>
+                <div class="input-row">
+                    <input type="range" id="power-slider" min="0.1" max="200" value="100" step="0.1">
+                    <input type="number" id="power-num" value="100" step="0.1">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Beam Waist $w_0$ (μm)</label>
+                <div class="input-row">
+                    <input type="range" id="waist-slider" min="0.1" max="10" value="5" step="0.1">
+                    <input type="number" id="waist-num" value="5" step="0.1">
+                </div>
+            </div>
+
+            <div class="query-box">
+                <label>🎯 Query Wavelength $\lambda$ (nm)</label>
+                <div class="input-row">
+                    <input type="number" id="query-lambda" value="850" step="0.1" style="width: 100%;">
+                </div>
+                
+                <div class="result-display">
+                    <div class="result-item">
+                        <span class="result-label">Trap Depth $U_0$</span>
+                        <span id="res-u0" class="result-val">0.00</span><span class="unit">μK</span>
+                        <div id="potential-type" style="font-size: 0.75em; font-weight:600; margin-top:2px;"></div>
+                    </div>
+                    <div class="result-item" style="border-top: 1px solid #cce5ff; padding-top: 10px;">
+                        <span class="result-label">Scattering Rate $\Gamma_{sc}$</span>
+                        <span id="res-sc" class="result-val" style="color: #28a745;">0.00</span><span class="unit">s⁻¹</span>
+                        <div id="sc-warning" class="warning">High scattering: Short lifetime!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="formula-card">
+                <strong>Scaling Laws:</strong><br>
+                $U_0 \propto I/\Delta$ (Depth)<br>
+                $\Gamma_{sc} \propto I/\Delta^2$ (Heating)
+            </div>
+        </div>
+
+        <div id="plot"></div>
+    </div>
+</div>
+
+<script>
+const PHYSICS = {
+    C: 299792458.0,
+    KB: 1.380649e-23,
+    HBAR: 1.0545718e-34,
+    GAMMA: 2 * Math.PI * 6.066e6,
+    LAM_D1: 794.76e-9,
+    LAM_D2: 780.24e-9,
+
+    getStats: function(wl, p, w0) {
+        const lam = wl * 1e-9;
+        const p_watt = p * 1e-3;
+        const w0_m = w0 * 1e-6;
+        const i0 = (2 * p_watt) / (Math.PI * Math.pow(w0_m, 2));
+        const omega = 2 * Math.PI * this.C / lam;
+        const omega1 = 2 * Math.PI * this.C / this.LAM_D1;
+        const omega2 = 2 * Math.PI * this.C / this.LAM_D2;
+        const prefactor_u = (Math.PI * Math.pow(this.C, 2) * this.GAMMA) / (2 * Math.pow(omega2, 3));
+        const prefactor_sc = (Math.PI * Math.pow(this.C, 2) * Math.pow(this.GAMMA, 2)) / (2 * this.HBAR * Math.pow(omega2, 3));
+        
+        const term_u = (2 / (omega - omega2)) + (1 / (omega - omega1));
+        const term_sc = (2 / Math.pow(omega - omega2, 2)) + (1 / Math.pow(omega - omega1, 2));
+
+        return {
+            u0: (prefactor_u * term_u * i0 / this.KB) * 1e6,
+            sc: (prefactor_sc * term_sc * i0)
+        };
+    }
+};
+
+function syncAndUpdate(sourceId) {
+    let p = document.getElementById('power-num').value;
+    let w = document.getElementById('waist-num').value;
+    
+    if (sourceId.includes('slider')) {
+        p = document.getElementById('power-slider').value;
+        w = document.getElementById('waist-slider').value;
+        document.getElementById('power-num').value = p;
+        document.getElementById('waist-num').value = w;
+    } else {
+        document.getElementById('power-slider').value = p;
+        document.getElementById('waist-slider').value = w;
+    }
+
+    const qL = parseFloat(document.getElementById('query-lambda').value);
+    const stats = PHYSICS.getStats(qL, parseFloat(p), parseFloat(w));
+    
+    // UI Update
+    document.getElementById('res-u0').innerText = isFinite(stats.u0) ? stats.u0.toFixed(2) : "Resonant";
+    document.getElementById('res-sc').innerText = isFinite(stats.sc) ? stats.sc.toExponential(2) : "High";
+    
+    const typeEl = document.getElementById('potential-type');
+    typeEl.innerText = stats.u0 < 0 ? "ATTRACTIVE (RED)" : "REPULSIVE (BLUE)";
+    typeEl.style.color = stats.u0 < 0 ? "#d9534f" : "#0275d8";
+    
+    document.getElementById('sc-warning').style.display = stats.sc > 500 ? "block" : "none";
+
+    // Plot
+    const x = [], y = [];
+    for (let l = 600; l <= 1000; l += 0.5) {
+        if (Math.abs(l - 780.24) < 1.5 || Math.abs(l - 794.76) < 1.5) continue;
+        x.push(l);
+        y.push(PHYSICS.getStats(l, p, w).u0);
+    }
+
+    Plotly.react('plot', [
+        { x: x, y: y, mode: 'lines', line: { color: '#007bff', width: 2 }, fill: 'tozeroy', fillcolor: 'rgba(0, 123, 255, 0.05)', name: 'Depth' },
+        { x: [qL], y: [stats.u0], mode: 'markers', marker: { color: '#ff7f0e', size: 10, symbol: 'diamond' }, name: 'Query' }
+    ], {
+        xaxis: { title: 'Wavelength (nm)' },
+        yaxis: { title: 'Depth (μK)', autorange: true },
+        margin: { t: 20, r: 20 }
+    });
+}
+
+['power-slider', 'power-num', 'waist-slider', 'waist-num', 'query-lambda'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => syncAndUpdate(id));
+});
+
+syncAndUpdate('power-num');
+</script>
+</body>
+</html>

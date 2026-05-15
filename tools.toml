@@ -1,0 +1,74 @@
+[[categories]]
+id = "data-analysis"
+name = "Data Analysis"
+order = 20
+
+[[categories]]
+id = "physics"
+name = "Physics"
+order = 30
+
+[[categories]]
+id = "draw-pictures"
+name = "Draw Pictures"
+order = 10
+
+[[groups]]
+id = "draw-pictures-general"
+name = "General"
+category = "draw-pictures"
+order = 10
+
+[[groups]]
+id = "data-analysis-general"
+name = "General Analysis"
+category = "data-analysis"
+order = 10
+
+[[groups]]
+id = "dipole-trap"
+name = "Dipole Trap"
+category = "physics"
+order = 10
+
+[[groups]]
+id = "gaussian-beam"
+name = "Gaussian Beam"
+category = "physics"
+order = 20
+
+[[tools]]
+id = "rb87-trap-depth"
+name = "Rb87 Trap Depth"
+group = "dipole-trap"
+kind = "page"
+description = "Interactive Rb87 dipole trap depth and scattering rate calculator."
+page = "pages/physics/dipole_trap/rb87_dipole_trap_depthVSwavelenth.html"
+icon = "TD"
+
+[[tools]]
+id = "rb87-scattering-rate"
+name = "Rb87 Scattering Rate"
+group = "dipole-trap"
+kind = "page"
+description = "Interactive Rb87 dipole trap scattering rate calculator."
+page = "pages/physics/dipole_trap/rb87_dipole_scaterring_rateVSwavelenth.html"
+icon = "SR"
+
+[[tools]]
+id = "single-lens-gaussian-beam"
+name = "Single-Lens Gaussian Beam"
+group = "gaussian-beam"
+kind = "page"
+description = "Interactive Gaussian beam propagation calculator for a single lens."
+page = "pages/physics/gaussian_beam/single_lens_gaussian_beam_calculator.html"
+icon = "1L"
+
+[[tools]]
+id = "two-lens-gaussian-beam"
+name = "Two-Lens Gaussian Beam"
+group = "gaussian-beam"
+kind = "page"
+description = "Interactive Gaussian beam propagation calculator for a two-lens system."
+page = "pages/physics/gaussian_beam/two_lens_gaussian_beam_calculator.html"
+icon = "2L"

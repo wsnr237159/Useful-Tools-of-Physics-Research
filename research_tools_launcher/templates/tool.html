@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tool.name }} - {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="detail-layout">
+  <a class="back-link" href="{{ url_for('index', category=category.id) }}">Back to {{ category.name }}</a>
+
+  <div class="detail-header">
+    <span class="tool-icon large">{{ tool.icon or tool.name[:1] }}</span>
+    <div>
+      <p class="eyebrow">{{ category.name }} / {{ group.name }}</p>
+      <h1>{{ tool.name }}</h1>
+      <p>{{ tool.description }}</p>
+    </div>
+  </div>
+
+  {% if errors %}
+    <div class="alert error">
+      {% for error in errors %}
+        <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form class="tool-form" action="{{ url_for('run_tool_route', tool_id=tool.id) }}" method="post" enctype="multipart/form-data">
+    {% if tool.params %}
+      <div class="field-grid">
+        {% for param in tool.params %}
+          <label class="field">
+            <span class="field-label">
+              {{ param.label }}
+              {% if param.required %}<em>Required</em>{% endif %}
+            </span>
+            {% if param.description %}
+              <span class="field-help">{{ param.description }}</span>
+            {% endif %}
+
+            {% if param.type == "text" %}
+              <input name="{{ param.name }}" type="text" value="{{ param.default or '' }}" {% if param.required %}required{% endif %}>
+            {% elif param.type == "number" %}
+              <input name="{{ param.name }}" type="number" step="any" value="{{ param.default or '' }}" {% if param.required %}required{% endif %}>
+            {% elif param.type == "file" %}
+              <input name="{{ param.name }}" type="file" {% if param.required %}required{% endif %}>
+            {% elif param.type == "bool" %}
+              <span class="checkbox-row">
+                <input name="{{ param.name }}" type="checkbox" {% if param.default %}checked{% endif %}>
+                <span>Enabled</span>
+              </span>
+            {% elif param.type == "select" %}
+              <select name="{{ param.name }}" {% if param.required %}required{% endif %}>
+                {% for choice in param.choices %}
+                  <option value="{{ choice }}" {% if choice == param.default %}selected{% endif %}>{{ choice }}</option>
+                {% endfor %}
+              </select>
+            {% endif %}
+          </label>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state compact">
+        <p>This tool does not require parameters.</p>
+      </div>
+    {% endif %}
+
+    <div class="form-actions">
+      <button type="submit">Run Tool</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

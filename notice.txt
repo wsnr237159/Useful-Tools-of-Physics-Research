@@ -1,0 +1,254 @@
+Local Research Tools Launcher - Maintenance Notice
+==================================================
+
+This project is a local Flask web launcher for research and study scripts.
+The project convention is:
+
+- Communication with the user may be in Chinese.
+- Program UI, code, configuration, comments, and documentation should be in English.
+
+
+1. Start and Stop the Website
+-----------------------------
+
+Start the local website:
+
+    cd /home/wsnr/tools
+    .venv/bin/python -m research_tools_launcher.app
+
+Open the launcher in a browser:
+
+    http://127.0.0.1:5000
+
+If port 5000 is already in use, start with another port:
+
+    cd /home/wsnr/tools
+    PORT=5001 .venv/bin/python -m research_tools_launcher.app
+
+If the server is running in your terminal, stop it with:
+
+    Ctrl+C
+
+If the server was started in the background, stop it with:
+
+    pkill -f research_tools_launcher.app
+
+Check whether port 5000 is still in use:
+
+    ss -ltnp | grep 5000
+
+If this command prints nothing, the local server is closed.
+
+
+2. Add a New Tool
+-----------------
+
+Tools are organized as:
+
+    Category -> Group -> Tool
+
+Each tool should be a standalone script under:
+
+    scripts/
+
+HTML page tools should be copied under:
+
+    pages/
+
+Recommended workflow:
+
+1. Create a Python script, for example:
+
+       scripts/fit_curve.py
+
+   Or copy an HTML page, for example:
+
+       pages/physics/dipole_trap/my_calculator.html
+
+2. Make script tools runnable from the terminal with command-line arguments.
+
+3. Register the script in:
+
+       tools.toml
+
+Example script tool registration:
+
+    [[tools]]
+    id = "fit-curve"
+    name = "Fit Curve"
+    group = "general-analysis"
+    kind = "script"
+    description = "Fit experimental data with selected models."
+    script = "scripts/fit_curve.py"
+    timeout_seconds = 120
+    icon = "FC"
+
+    [[tools.params]]
+    name = "input_file"
+    label = "Input File"
+    type = "file"
+    required = true
+    cli_flag = "--input-file"
+
+Example HTML page tool registration:
+
+    [[tools]]
+    id = "rb87-trap-depth"
+    name = "Rb87 Trap Depth"
+    group = "dipole-trap"
+    kind = "page"
+    description = "Interactive Rb87 dipole trap calculator."
+    page = "pages/physics/dipole_trap/rb87_dipole_trap_depthVSwavelenth.html"
+    icon = "TD"
+
+Supported parameter types:
+
+- text
+- number
+- file
+- bool
+- select
+
+The launcher passes parameters as command-line flags and sets this environment
+variable for each run:
+
+    PHYSICS_TOOLS_OUTPUT_DIR
+
+Scripts should write generated files into that directory.
+
+
+3. Add or Update Categories and Groups
+--------------------------------------
+
+Categories are registered in:
+
+    tools.toml
+
+Example:
+
+    [[categories]]
+    id = "optics"
+    name = "Optics"
+    order = 40
+
+Groups are also registered in tools.toml:
+
+    [[groups]]
+    id = "dipole-trap"
+    name = "Dipole Trap"
+    category = "physics"
+    order = 10
+
+Then assign tools to the group:
+
+    group = "dipole-trap"
+
+Keep category IDs short, lowercase, and stable. If a category ID changes,
+all groups using that category must be updated. Keep group IDs short,
+lowercase, and stable. If a group ID changes, all tools using that group
+must be updated.
+
+
+4. Update the Website UI
+------------------------
+
+Main files:
+
+- Home page menu:
+    research_tools_launcher/templates/index.html
+
+- Tool detail page:
+    research_tools_launcher/templates/tool.html
+
+- Run result page:
+    research_tools_launcher/templates/result.html
+
+- Shared base layout:
+    research_tools_launcher/templates/base.html
+
+- CSS styles:
+    research_tools_launcher/static/styles.css
+
+Keep visible UI text in English. After changing templates or styles, restart
+the Flask server and refresh the browser.
+
+
+5. Update Dependencies
+----------------------
+
+Runtime dependencies are listed in:
+
+    pyproject.toml
+    requirements.txt
+
+After changing dependencies, reinstall the project in the virtual environment:
+
+    cd /home/wsnr/tools
+    .venv/bin/python -m pip install -e ".[test]"
+
+
+6. Test After Changes
+---------------------
+
+Run the test suite after changing Python code, configuration behavior, or
+script execution logic:
+
+    cd /home/wsnr/tools
+    .venv/bin/python -m pytest
+
+Important checks:
+
+- The launcher home page loads.
+- The tool detail page loads.
+- A registered script can run successfully.
+- Invalid parameters show a useful error.
+- Tool output appears in the result page.
+- Generated files are written under outputs/.
+
+
+7. Safety Rules
+---------------
+
+- Only run scripts registered in tools.toml.
+- Keep scripts inside the project directory.
+- Keep HTML page tools inside the project directory.
+- Do not execute arbitrary shell commands from user input.
+- Keep subprocess execution with shell=False.
+- Use timeouts for long-running tools.
+- Do not store important source files in outputs/, because outputs/ is ignored.
+
+
+8. Recommended Version Control
+------------------------------
+
+This project should be tracked with git so changes can be reviewed and rolled
+back safely.
+
+Initialize git if needed:
+
+    cd /home/wsnr/tools
+    git init
+    git add .
+    git commit -m "Initial research tools launcher"
+
+Before making larger changes:
+
+    git status
+
+After making a tested change:
+
+    git add .
+    git commit -m "Describe the change"
+
+
+9. Typical Maintenance Workflow
+-------------------------------
+
+1. Stop the running server if needed.
+2. Add or edit scripts under scripts/.
+3. Add or edit HTML page tools under pages/.
+4. Register or update categories, groups, and tools in tools.toml.
+5. Run tests.
+6. Start the server.
+7. Open the website and manually test the changed tool.
+8. Commit the change with git.

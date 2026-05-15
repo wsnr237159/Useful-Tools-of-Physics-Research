@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two-Lens Gaussian Beam Calculator</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9e1ec;
+      --primary: #315efb;
+      --primary-dark: #2447c6;
+      --accent: #0f9f78;
+      --warn: #b54708;
+      --shadow: 0 18px 45px rgba(32, 44, 84, 0.10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(49, 94, 251, 0.16), transparent 30%),
+        radial-gradient(circle at 88% 10%, rgba(15, 159, 120, 0.13), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 34px 24px 18px;
+      max-width: 1380px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(217, 225, 236, 0.78);
+      box-shadow: var(--shadow);
+      border-radius: 30px;
+      padding: 30px;
+      backdrop-filter: blur(12px);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(26px, 4vw, 42px);
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 1080px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(330px, 450px) minmax(0, 1fr);
+      gap: 22px;
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 12px 24px 42px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 22px;
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+    }
+
+    .controls h2, .panel h2 {
+      font-size: 18px;
+      margin: 0 0 16px;
+    }
+
+    .section-title {
+      margin-top: 22px !important;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .grid3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 650;
+      color: #344054;
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid #cdd6e3;
+      background: #fbfcff;
+      border-radius: 13px;
+      padding: 11px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: 0.18s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(49, 94, 251, 0.10);
+      background: white;
+    }
+
+    .field { margin-bottom: 13px; }
+
+    .unit-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 5px;
+      line-height: 1.45;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0 12px;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .checkbox-row input {
+      width: auto;
+      transform: scale(1.05);
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 750;
+      font-size: 14px;
+      transition: 0.16s ease;
+    }
+
+    .primary {
+      background: var(--primary);
+      color: white;
+      flex: 1;
+    }
+
+    .primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+    .secondary {
+      background: #eef2f8;
+      color: #314056;
+    }
+
+    .secondary:hover { background: #e1e7f0; }
+
+    .formula {
+      margin-top: 18px;
+      padding: 14px;
+      background: #f8faff;
+      border: 1px solid #e5ebf5;
+      border-radius: 16px;
+      color: #314056;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .formula code {
+      display: block;
+      font-family: "Times New Roman", Cambria, Georgia, serif;
+      font-size: 16px;
+      color: #14213d;
+      background: white;
+      border: 1px solid #e5ebf5;
+      padding: 9px 10px;
+      border-radius: 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .formula sub {
+      font-size: 70%;
+      vertical-align: sub;
+      line-height: 0;
+    }
+
+    .formula sup {
+      font-size: 70%;
+      vertical-align: super;
+      line-height: 0;
+    }
+
+    .content {
+      display: grid;
+      gap: 22px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      padding: 18px;
+    }
+
+    .metric .k {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .metric .v {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      overflow-wrap: anywhere;
+    }
+
+    .metric .s {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+
+    .panel p {
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 430px;
+      display: block;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff, #fbfcff);
+      border: 1px solid #edf1f7;
+    }
+
+    #beamCanvas { height: 390px; }
+
+    .error, .warning {
+      display: none;
+      margin-top: 14px;
+      border-radius: 14px;
+      padding: 11px 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .error {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: var(--warn);
+    }
+
+    .warning {
+      background: #fffbea;
+      border: 1px solid #facc15;
+      color: #854d0e;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 22px;
+      height: 3px;
+      border-radius: 99px;
+      display: inline-block;
+      background: #111;
+    }
+
+    .blue { background: #315efb; }
+    .green { background: #0f9f78; }
+    .orange { background: #e8710a; }
+    .purple { background: #8b5cf6; }
+    .gray { background: #667085; }
+
+    footer {
+      max-width: 1380px;
+      padding: 0 24px 36px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 1080px) {
+      main { grid-template-columns: 1fr; }
+      .controls { position: static; max-height: none; }
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 620px) {
+      header, main, footer { padding-left: 14px; padding-right: 14px; }
+      .hero { padding: 22px; }
+      .grid2, .grid3, .summary { grid-template-columns: 1fr; }
+      canvas { height: 340px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <section class="hero">
+      <h1>Two-Lens Gaussian Beam Calculator</h1>
+      <p class="subtitle">
+        Enter the incident waist, wavelength, and two focal lengths. The app scans the two lens positions and draws heatmaps for the final waist radius and final waist position after the second thin lens. Beam radius is defined as the 1/e² intensity radius.
+      </p>
+    </section>
+  </header>
+
+  <main>
+    <aside class="card controls">
+      <h2>Input Parameters</h2>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="lambdaNm">Wavelength λ / nm</label>
+          <input id="lambdaNm" type="number" value="1012" step="0.1" />
+        </div>
+        <div class="field">
+          <label for="w0Um">Incident waist radius w₀ / μm</label>
+          <input id="w0Um" type="number" value="500.00" step="0.01" />
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="field">
+          <label for="z0Mm">Incident waist position z₀ / mm</label>
+          <input id="z0Mm" type="number" value="0" step="0.01" />
+        </div>
+        <div class="field">
+          <label for="f1Mm">Lens 1 focal length f₁ / mm</label>
+          <input id="f1Mm" type="number" value="200" step="0.01" />
+        </div>
+        <div class="field">
+          <label for="f2Mm">Lens 2 focal length f₂ / mm</label>
+          <input id="f2Mm" type="number" value="150" step="0.01" />
+        </div>
+      </div>
+
+      <h2 class="section-title">Scan Lens Positions</h2>
+      <div class="grid3">
+        <div class="field">
+          <label for="z1MinMm">z<sub>L1</sub> start / mm</label>
+          <input id="z1MinMm" type="number" value="-200" step="10" />
+        </div>
+        <div class="field">
+          <label for="z1MaxMm">z<sub>L1</sub> end / mm</label>
+          <input id="z1MaxMm" type="number" value="300" step="10" />
+        </div>
+        <div class="field">
+          <label for="z1Points">z<sub>L1</sub> samples</label>
+          <input id="z1Points" type="number" value="121" min="20" max="800" step="1" />
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="field">
+          <label for="z2MinMm">z<sub>L2</sub> start / mm</label>
+          <input id="z2MinMm" type="number" value="0" step="10" />
+        </div>
+        <div class="field">
+          <label for="z2MaxMm">z<sub>L2</sub> end / mm</label>
+          <input id="z2MaxMm" type="number" value="600" step="10" />
+        </div>
+        <div class="field">
+          <label for="z2Points">z<sub>L2</sub> samples</label>
+          <input id="z2Points" type="number" value="121" min="20" max="800" step="1" />
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <input id="enforceOrder" type="checkbox" checked />
+        <label for="enforceOrder" style="margin: 0;">Require lens 2 to be after lens 1</label>
+      </div>
+
+      <div class="field">
+        <label for="minSeparationMm">Minimum lens separation / mm</label>
+        <input id="minSeparationMm" type="number" value="1" step="0.01" />
+        <div class="unit-note">Used only when the lens-order constraint is enabled.</div>
+      </div>
+
+      <div class="button-row">
+        <button class="primary" id="calcBtn">Calculate Heatmaps</button>
+        <button class="secondary" id="resetBtn">Reset</button>
+      </div>
+
+      <div class="error" id="errorBox"></div>
+      <div class="warning" id="warningBox"></div>
+
+      <h2 class="section-title">Query Lens Positions</h2>
+      <div class="grid2">
+        <div class="field">
+          <label for="queryZ1Mm">Query z<sub>L1</sub> / mm</label>
+          <input id="queryZ1Mm" type="number" value="100" step="0.01" />
+        </div>
+        <div class="field">
+          <label for="queryZ2Mm">Query z<sub>L2</sub> / mm</label>
+          <input id="queryZ2Mm" type="number" value="350" step="0.01" />
+        </div>
+      </div>
+      <div class="button-row" style="margin-top: 8px;">
+        <button class="primary" id="queryBtn">Query Value</button>
+      </div>
+      <div class="formula" id="queryResult" style="margin-top: 12px;">
+        <strong>Query Result</strong>
+        <code>Run calculation first, then query two lens positions.</code>
+      </div>
+
+      <h2 class="section-title">Inverse Solver</h2>
+      <div class="grid2">
+        <div class="field">
+          <label for="targetWUm">Target final waist radius / μm</label>
+          <input id="targetWUm" type="number" value="100.00" step="0.01" />
+        </div>
+        <div class="field">
+          <label for="targetZMm">Target final waist position / mm</label>
+          <input id="targetZMm" type="number" value="500" step="0.01" />
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="solverGuessZ1Mm">Initial guess z<sub>L1</sub> / mm</label>
+          <input id="solverGuessZ1Mm" type="number" value="100" step="0.01" />
+        </div>
+        <div class="field">
+          <label for="solverGuessZ2Mm">Initial guess z<sub>L2</sub> / mm</label>
+          <input id="solverGuessZ2Mm" type="number" value="350" step="0.01" />
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="solverTolerance">Residual tolerance</label>
+          <input id="solverTolerance" type="number" value="1e-9" min="1e-14" max="1e-2" step="1e-9" />
+        </div>
+        <div class="field">
+          <label for="solverMaxIter">Max Newton iterations</label>
+          <input id="solverMaxIter" type="number" value="80" min="5" max="200" step="1" />
+        </div>
+      </div>
+      <div class="unit-note">
+        This is a damped Newton/Levenberg nonlinear equation solver. It does not scan a grid. It solves the two equations w<sub>new</sub> = target w and z<sub>new</sub> = target z from the initial guess, constrained to the current scan ranges.
+      </div>
+      <div class="button-row" style="margin-top: 8px;">
+        <button class="primary" id="solveBtn">Solve Lens Positions</button>
+      </div>
+      <div class="formula" id="solverResult" style="margin-top: 12px;">
+        <strong>Solver Result</strong>
+        <code>Enter a target beam and click Solve Lens Positions.</code>
+      </div>
+
+      <div class="formula">
+        <strong>Calculation Convention</strong>
+        <code><i>q</i><sub>0</sub>(<i>z</i><sub>L1</sub>) = (<i>z</i><sub>L1</sub> − <i>z</i><sub>0</sub>) + <i>i z</i><sub>R</sub></code>
+        <code><i>z</i><sub>R</sub> = π<i>w</i><sub>0</sub><sup>2</sup> / λ</code>
+        <code>1/<i>q</i><sub>1+</sub> = 1/<i>q</i><sub>1−</sub> − 1/<i>f</i><sub>1</sub></code>
+        <code><i>q</i><sub>2−</sub> = <i>q</i><sub>1+</sub> + (<i>z</i><sub>L2</sub> − <i>z</i><sub>L1</sub>)</code>
+        <code>1/<i>q</i><sub>2+</sub> = 1/<i>q</i><sub>2−</sub> − 1/<i>f</i><sub>2</sub></code>
+        <code><i>q</i><sub>2+</sub> = <i>a</i> + <i>i b</i>, &nbsp; <i>z</i><sub>new</sub> = <i>z</i><sub>L2</sub> − <i>a</i>, &nbsp; <i>w</i><sub>new</sub> = √(λ<i>b</i>/π)</code>
+      </div>
+    </aside>
+
+    <section class="content">
+      <section class="summary">
+        <div class="card metric">
+          <div class="k">Incident Rayleigh length</div>
+          <div class="v" id="zRMetric">—</div>
+          <div class="s">Determined by the incident waist and wavelength</div>
+        </div>
+        <div class="card metric">
+          <div class="k">Queried waist radius</div>
+          <div class="v" id="wMetric">—</div>
+          <div class="s">For the queried lens positions</div>
+        </div>
+        <div class="card metric">
+          <div class="k">Queried waist position</div>
+          <div class="v" id="zMetric">—</div>
+          <div class="s">Global z coordinate</div>
+        </div>
+        <div class="card metric">
+          <div class="k">Distance from lens 2</div>
+          <div class="v" id="relMetric">—</div>
+          <div class="s">Positive means the new waist is after lens 2</div>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-header">
+          <div>
+            <h2>Final Waist Radius Heatmap</h2>
+            <p>Horizontal axis: lens 1 position z<sub>L1</sub>. Vertical axis: lens 2 position z<sub>L2</sub>. Invalid or near-singular points are left blank.</p>
+          </div>
+        </div>
+        <canvas id="waistHeatmap"></canvas>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-header">
+          <div>
+            <h2>Final Waist Position Heatmap</h2>
+            <p>The color shows the global final waist position z<sub>new</sub> after the second lens.</p>
+          </div>
+        </div>
+        <canvas id="positionHeatmap"></canvas>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-header">
+          <div>
+            <h2>Beam Envelope at the Queried Lens Positions</h2>
+            <p>The orange and purple vertical lines are lens 1 and lens 2. The beam envelope is drawn in separated segments, skipping both lens planes.</p>
+          </div>
+        </div>
+        <canvas id="beamCanvas"></canvas>
+        <div class="legend">
+          <span><i class="swatch blue"></i>Beam 1/e² radius envelope</span>
+          <span><i class="swatch orange"></i>Lens 1</span>
+          <span><i class="swatch purple"></i>Lens 2</span>
+          <span><i class="swatch gray"></i>Incident waist</span>
+          <span><i class="swatch green"></i>Final waist</span>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    Note: This page uses ideal thin lenses and an ideal TEM00 Gaussian beam. It does not include M², aberrations, aperture clipping, finite lens diameter, or refractive-index effects. If your measured beam size is an FWHM diameter or a 1/e² diameter, convert it to the 1/e² radius before entering it here.
+  </footer>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const defaults = {
+      lambdaNm: 1012,
+      w0Um: 500.00,
+      z0Mm: 0,
+      f1Mm: 200,
+      f2Mm: 150,
+      z1MinMm: -200,
+      z1MaxMm: 300,
+      z1Points: 121,
+      z2MinMm: 0,
+      z2MaxMm: 600,
+      z2Points: 121,
+      enforceOrder: true,
+      minSeparationMm: 1,
+      queryZ1Mm: 100,
+      queryZ2Mm: 350,
+      targetWUm: 100.00,
+      targetZMm: 500,
+      solverGuessZ1Mm: 100,
+      solverGuessZ2Mm: 350,
+      solverTolerance: 1e-9,
+      solverMaxIter: 80
+    };
+
+    const MAX_PLOT_POSITION_MM = 1e7;
+    const MAX_PLOT_RADIUS_UM = 1e7;
+    const MIN_LENS_DENOMINATOR = 1e-18;
+
+    let lastHeatmapData = null;
+
+    function complexDiv(a, b, c, d) {
+      const den = c * c + d * d;
+      return [(a * c + b * d) / den, (b * c - a * d) / den];
+    }
+
+    function lensTransform(qRe, qIm, f) {
+      const den = qRe * qRe + qIm * qIm;
+      const invRe = qRe / den - 1 / f;
+      const invIm = -qIm / den;
+      const lensDenominator = invRe * invRe + invIm * invIm;
+
+      if (!Number.isFinite(lensDenominator) || lensDenominator < MIN_LENS_DENOMINATOR) {
+        return { qRe: NaN, qIm: NaN, lensDenominator, nearSingular: true };
+      }
+
+      const [outRe, outIm] = complexDiv(1, 0, invRe, invIm);
+      return {
+        qRe: outRe,
+        qIm: outIm,
+        lensDenominator,
+        nearSingular: lensDenominator < 100 * MIN_LENS_DENOMINATOR
+      };
+    }
+
+    function calculateTwo(p, z1, z2) {
+      const lambda = p.lambdaNm * 1e-6; // nm -> mm
+      const w0 = p.w0Um * 1e-3;        // um -> mm
+      const zR = Math.PI * w0 * w0 / lambda;
+
+      if (p.enforceOrder && z2 <= z1 + p.minSeparationMm) {
+        return { z1, z2, zR, validForPlot: false, invalidOrder: true };
+      }
+
+      const q1MinusRe = z1 - p.z0Mm;
+      const q1MinusIm = zR;
+      const t1 = lensTransform(q1MinusRe, q1MinusIm, p.f1Mm);
+      if (!Number.isFinite(t1.qRe) || !Number.isFinite(t1.qIm)) {
+        return { z1, z2, zR, validForPlot: false, nearSingular: true, stage: "lens 1" };
+      }
+
+      const d12 = z2 - z1;
+      const q2MinusRe = t1.qRe + d12;
+      const q2MinusIm = t1.qIm;
+      const t2 = lensTransform(q2MinusRe, q2MinusIm, p.f2Mm);
+      const a = t2.qRe;
+      const b = t2.qIm;
+      const zNew = z2 - a;
+      const rel = -a;
+      const wNew = b > 0 ? Math.sqrt(lambda * b / Math.PI) : NaN;
+
+      const finite = [zR, a, b, zNew, rel, wNew].every(Number.isFinite);
+      const tooLarge = finite && (
+        Math.abs(zNew) > MAX_PLOT_POSITION_MM ||
+        Math.abs(rel) > MAX_PLOT_POSITION_MM ||
+        Math.abs(b) > MAX_PLOT_POSITION_MM ||
+        Math.abs(wNew * 1000) > MAX_PLOT_RADIUS_UM
+      );
+      const nearSingular = Boolean(t1.nearSingular || t2.nearSingular);
+      const validForPlot = finite && b > 0 && !tooLarge && !nearSingular;
+
+      return {
+        z1,
+        z2,
+        zR,
+        q1MinusRe,
+        q1MinusIm,
+        q1PlusRe: t1.qRe,
+        q1PlusIm: t1.qIm,
+        q2MinusRe,
+        q2MinusIm,
+        q2PlusRe: a,
+        q2PlusIm: b,
+        zNew,
+        rel,
+        wNewMm: wNew,
+        wNewUm: wNew * 1000,
+        validForPlot,
+        tooLarge,
+        nearSingular,
+        invalidOrder: false,
+        lens1Denominator: t1.lensDenominator,
+        lens2Denominator: t2.lensDenominator
+      };
+    }
+
+    function readParams() {
+      const p = {};
+      for (const k of Object.keys(defaults)) {
+        if (k === "enforceOrder") p[k] = $(k).checked;
+        else p[k] = Number($(k).value);
+      }
+      return p;
+    }
+
+    function validate(p) {
+      const errors = [];
+      if (!(p.lambdaNm > 0)) errors.push("Wavelength λ must be positive.");
+      if (!(p.w0Um > 0)) errors.push("Incident waist radius w₀ must be positive.");
+      if (!Number.isFinite(p.z0Mm)) errors.push("Incident waist position z₀ must be a valid number.");
+      if (!Number.isFinite(p.f1Mm) || p.f1Mm === 0) errors.push("Lens 1 focal length f₁ must be a valid nonzero number.");
+      if (!Number.isFinite(p.f2Mm) || p.f2Mm === 0) errors.push("Lens 2 focal length f₂ must be a valid nonzero number.");
+      if (!Number.isFinite(p.z1MinMm) || !Number.isFinite(p.z1MaxMm) || p.z1MaxMm <= p.z1MinMm) errors.push("Lens 1 scan range is invalid.");
+      if (!Number.isFinite(p.z2MinMm) || !Number.isFinite(p.z2MaxMm) || p.z2MaxMm <= p.z2MinMm) errors.push("Lens 2 scan range is invalid.");
+      if (!(p.z1Points >= 20 && p.z1Points <= 800)) errors.push("Lens 1 samples must be between 20 and 800.");
+      if (!(p.z2Points >= 20 && p.z2Points <= 800)) errors.push("Lens 2 samples must be between 20 and 800.");
+      if (!Number.isFinite(p.minSeparationMm) || p.minSeparationMm < 0) errors.push("Minimum lens separation must be non-negative.");
+      if (!Number.isFinite(p.queryZ1Mm) || !Number.isFinite(p.queryZ2Mm)) errors.push("Query lens positions must be valid numbers.");
+      if (!(p.targetWUm > 0)) errors.push("Target waist radius must be positive.");
+      if (!Number.isFinite(p.targetZMm)) errors.push("Target waist position must be a valid number.");
+      if (!Number.isFinite(p.solverGuessZ1Mm)) errors.push("Solver initial guess zL1 must be a valid number.");
+      if (!Number.isFinite(p.solverGuessZ2Mm)) errors.push("Solver initial guess zL2 must be a valid number.");
+      if (!(p.solverTolerance > 0 && p.solverTolerance <= 1e-2)) errors.push("Solver residual tolerance must be positive and no larger than 1e-2.");
+      if (!(p.solverMaxIter >= 5 && p.solverMaxIter <= 200)) errors.push("Max Newton iterations must be between 5 and 200.");
+      return errors;
+    }
+
+    function formatNumber(x, digits = 3) {
+      if (!Number.isFinite(x)) return "—";
+      const ax = Math.abs(x);
+      if (ax !== 0 && (ax >= 1e5 || ax < 1e-3)) return x.toExponential(3);
+      return x.toLocaleString("en-US", { maximumFractionDigits: digits });
+    }
+
+    function setError(messages) {
+      const box = $("errorBox");
+      if (!messages.length) {
+        box.style.display = "none";
+        box.textContent = "";
+      } else {
+        box.style.display = "block";
+        box.innerHTML = messages.map(m => `• ${m}`).join("<br>");
+      }
+    }
+
+    function setWarning(messages) {
+      const box = $("warningBox");
+      if (!messages.length) {
+        box.style.display = "none";
+        box.textContent = "";
+      } else {
+        box.style.display = "block";
+        box.innerHTML = messages.map(m => `• ${m}`).join("<br>");
+      }
+    }
+
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, width: rect.width, height: rect.height };
+    }
+
+    function drawMessage(canvas, message) {
+      const { ctx, width, height } = setupCanvas(canvas);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = "#667085";
+      ctx.font = "14px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(message, width / 2, height / 2);
+    }
+
+    function linspace(min, max, n) {
+      const out = [];
+      for (let i = 0; i < n; i++) out.push(min + (max - min) * i / (n - 1));
+      return out;
+    }
+
+    function makeHeatmapData(p) {
+      const z1Values = linspace(p.z1MinMm, p.z1MaxMm, Math.round(p.z1Points));
+      const z2Values = linspace(p.z2MinMm, p.z2MaxMm, Math.round(p.z2Points));
+      const waist = [];
+      const pos = [];
+      let validCount = 0;
+      let invalidCount = 0;
+      let orderInvalidCount = 0;
+
+      for (let j = 0; j < z2Values.length; j++) {
+        const wRow = [];
+        const zRow = [];
+        for (let i = 0; i < z1Values.length; i++) {
+          const r = calculateTwo(p, z1Values[i], z2Values[j]);
+          if (r.validForPlot) {
+            wRow.push(r.wNewUm);
+            zRow.push(r.zNew);
+            validCount++;
+          } else {
+            wRow.push(NaN);
+            zRow.push(NaN);
+            invalidCount++;
+            if (r.invalidOrder) orderInvalidCount++;
+          }
+        }
+        waist.push(wRow);
+        pos.push(zRow);
+      }
+
+      return { z1Values, z2Values, waist, pos, validCount, invalidCount, orderInvalidCount };
+    }
+
+    function finiteRange(matrix) {
+      let min = Infinity, max = -Infinity;
+      for (const row of matrix) {
+        for (const v of row) {
+          if (Number.isFinite(v)) {
+            min = Math.min(min, v);
+            max = Math.max(max, v);
+          }
+        }
+      }
+      if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
+      if (min === max) {
+        const delta = Math.max(Math.abs(min) * 0.1, 1);
+        return [min - delta, max + delta];
+      }
+      return [min, max];
+    }
+
+    function heatColor(t) {
+      t = Math.max(0, Math.min(1, t));
+      const stops = [
+        [32, 45, 110],
+        [49, 94, 251],
+        [15, 159, 120],
+        [250, 204, 21],
+        [232, 113, 10]
+      ];
+      const x = t * (stops.length - 1);
+      const i = Math.min(stops.length - 2, Math.floor(x));
+      const u = x - i;
+      const c0 = stops[i], c1 = stops[i + 1];
+      const r = Math.round(c0[0] + (c1[0] - c0[0]) * u);
+      const g = Math.round(c0[1] + (c1[1] - c0[1]) * u);
+      const b = Math.round(c0[2] + (c1[2] - c0[2]) * u);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function niceTicks(min, max, count = 5) {
+      const span = max - min;
+      if (!(span > 0)) return [min];
+      const raw = span / Math.max(1, count - 1);
+      const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const norm = raw / mag;
+      let step;
+      if (norm < 1.5) step = 1 * mag;
+      else if (norm < 3) step = 2 * mag;
+      else if (norm < 7) step = 5 * mag;
+      else step = 10 * mag;
+      const start = Math.ceil(min / step) * step;
+      const ticks = [];
+      for (let v = start; v <= max + step * 0.5; v += step) ticks.push(v);
+      return ticks.slice(0, 10);
+    }
+
+    function drawHeatmap(canvas, z1Values, z2Values, matrix, title, unit, queryZ1, queryZ2) {
+      const range = finiteRange(matrix);
+      if (!range) {
+        drawMessage(canvas, "No stable data points are available for this heatmap.");
+        return;
+      }
+
+      const { ctx, width, height } = setupCanvas(canvas);
+      const plot = { left: 76, right: 88, top: 24, bottom: 56, fullWidth: width, fullHeight: height };
+      plot.w = width - plot.left - plot.right;
+      plot.h = height - plot.top - plot.bottom;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+
+      const xMin = z1Values[0], xMax = z1Values[z1Values.length - 1];
+      const yMin = z2Values[0], yMax = z2Values[z2Values.length - 1];
+      const [vMin, vMax] = range;
+      const cellW = plot.w / z1Values.length;
+      const cellH = plot.h / z2Values.length;
+
+      for (let j = 0; j < z2Values.length; j++) {
+        for (let i = 0; i < z1Values.length; i++) {
+          const v = matrix[j][i];
+          const x = plot.left + i * cellW;
+          const y = plot.top + (z2Values.length - 1 - j) * cellH;
+          if (Number.isFinite(v)) {
+            const t = (v - vMin) / (vMax - vMin);
+            ctx.fillStyle = heatColor(t);
+          } else {
+            ctx.fillStyle = "#eef2f8";
+          }
+          ctx.fillRect(x, y, Math.ceil(cellW) + 0.5, Math.ceil(cellH) + 0.5);
+        }
+      }
+
+      const xToPx = x => plot.left + (x - xMin) / (xMax - xMin) * plot.w;
+      const yToPx = y => plot.top + plot.h - (y - yMin) / (yMax - yMin) * plot.h;
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,0.45)";
+      ctx.lineWidth = 1;
+      for (const x of niceTicks(xMin, xMax, 6)) {
+        const px = xToPx(x);
+        ctx.beginPath();
+        ctx.moveTo(px, plot.top);
+        ctx.lineTo(px, plot.top + plot.h);
+        ctx.stroke();
+      }
+      for (const y of niceTicks(yMin, yMax, 6)) {
+        const py = yToPx(y);
+        ctx.beginPath();
+        ctx.moveTo(plot.left, py);
+        ctx.lineTo(plot.left + plot.w, py);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = "#cdd6e3";
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(plot.left, plot.top, plot.w, plot.h);
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      for (const x of niceTicks(xMin, xMax, 6)) ctx.fillText(formatNumber(x, 2), xToPx(x), plot.top + plot.h + 9);
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (const y of niceTicks(yMin, yMax, 6)) ctx.fillText(formatNumber(y, 2), plot.left - 9, yToPx(y));
+      ctx.fillStyle = "#344054";
+      ctx.font = "13px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillText("Lens 1 position zL1 / mm", plot.left + plot.w / 2, height - 7);
+      ctx.save();
+      ctx.translate(14, plot.top + plot.h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("Lens 2 position zL2 / mm", 0, 0);
+      ctx.restore();
+      ctx.restore();
+
+      if (Number.isFinite(queryZ1) && Number.isFinite(queryZ2) && queryZ1 >= xMin && queryZ1 <= xMax && queryZ2 >= yMin && queryZ2 <= yMax) {
+        const px = xToPx(queryZ1);
+        const py = yToPx(queryZ2);
+        ctx.save();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(px, py, 6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = "#111827";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(px, py, 6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Color bar
+      const cb = { x: plot.left + plot.w + 26, y: plot.top, w: 18, h: plot.h };
+      for (let k = 0; k < cb.h; k++) {
+        const t = 1 - k / cb.h;
+        ctx.fillStyle = heatColor(t);
+        ctx.fillRect(cb.x, cb.y + k, cb.w, 1);
+      }
+      ctx.strokeStyle = "#cdd6e3";
+      ctx.strokeRect(cb.x, cb.y, cb.w, cb.h);
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px ui-sans-serif, system-ui";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${formatNumber(vMax, 3)} ${unit}`, cb.x + cb.w + 7, cb.y + 6);
+      ctx.fillText(`${formatNumber(vMin, 3)} ${unit}`, cb.x + cb.w + 7, cb.y + cb.h - 6);
+      ctx.save();
+      ctx.translate(cb.x + cb.w + 30, cb.y + cb.h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#344054";
+      ctx.font = "13px ui-sans-serif, system-ui";
+      ctx.fillText(title, 0, 0);
+      ctx.restore();
+    }
+
+    function updateQueryResult() {
+      const box = $("queryResult");
+      const p = readParams();
+      const errors = validate(p);
+      if (errors.length) {
+        box.innerHTML = `<strong>Query Result</strong><code>Invalid input. Please check the parameters above.</code>`;
+        return null;
+      }
+
+      const q = calculateTwo(p, p.queryZ1Mm, p.queryZ2Mm);
+      $("zRMetric").textContent = `${formatNumber(q.zR, 3)} mm`;
+      if (!q.validForPlot) {
+        $("wMetric").textContent = "unstable";
+        $("zMetric").textContent = "unstable";
+        $("relMetric").textContent = "unstable";
+        box.innerHTML = `
+          <strong>Query Result</strong>
+          <code><i>z</i><sub>L1</sub> = ${formatNumber(p.queryZ1Mm, 6)} mm, &nbsp; <i>z</i><sub>L2</sub> = ${formatNumber(p.queryZ2Mm, 6)} mm</code>
+          <code>Result: unstable, invalid order, or too large for reliable plotting</code>
+          <code>Invalid order: ${q.invalidOrder ? "yes" : "no"}, &nbsp; Near singular: ${q.nearSingular ? "yes" : "no"}</code>
+        `;
+        drawBeamEnvelope($("beamCanvas"), p, q);
+        return q;
+      }
+
+      $("wMetric").textContent = `${formatNumber(q.wNewUm, 3)} μm`;
+      $("zMetric").textContent = `${formatNumber(q.zNew, 3)} mm`;
+      $("relMetric").textContent = `${formatNumber(q.rel, 3)} mm`;
+      box.innerHTML = `
+        <strong>Query Result</strong>
+        <code><i>z</i><sub>L1</sub> = ${formatNumber(q.z1, 6)} mm, &nbsp; <i>z</i><sub>L2</sub> = ${formatNumber(q.z2, 6)} mm</code>
+        <code><i>w</i><sub>new</sub> = ${formatNumber(q.wNewUm, 6)} μm</code>
+        <code><i>z</i><sub>new</sub> = ${formatNumber(q.zNew, 6)} mm</code>
+        <code><i>z</i><sub>new</sub> − <i>z</i><sub>L2</sub> = ${formatNumber(q.rel, 6)} mm</code>
+      `;
+      drawBeamEnvelope($("beamCanvas"), p, q);
+      return q;
+    }
+
+    function buildWarnings(data) {
+      const warnings = [];
+      if (!data) return warnings;
+      if (data.invalidCount > 0) {
+        warnings.push(`${data.invalidCount} scanned point(s) were omitted because they are invalid, near-singular, or too large for stable plotting.`);
+      }
+      if (data.orderInvalidCount > 0) {
+        warnings.push(`${data.orderInvalidCount} omitted point(s) violate the lens-order constraint zL2 > zL1 + minimum separation.`);
+      }
+      if (data.validCount === 0) {
+        warnings.push("No stable point was found in the current scan range. Try wider ranges, different focal lengths, or disable the lens-order constraint for testing.");
+      }
+      return warnings;
+    }
+
+    function drawBeamEnvelope(canvas, p, selected) {
+      if (!selected || !selected.validForPlot) {
+        drawMessage(canvas, "The queried lens positions are invalid or numerically unstable.");
+        return;
+      }
+
+      const { ctx, width, height } = setupCanvas(canvas);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+
+      const lambda = p.lambdaNm * 1e-6;
+      const w0 = p.w0Um * 1e-3;
+      const zR = Math.PI * w0 * w0 / lambda;
+      const z1 = selected.z1;
+      const z2 = selected.z2;
+      const zNew = selected.zNew;
+      const postW0 = selected.wNewMm;
+      const postZR = selected.q2PlusIm;
+
+      let xMin = Math.min(p.z0Mm - 1.2 * zR, z1 - Math.abs(p.f1Mm), z2 - Math.abs(p.f2Mm), zNew - 1.2 * postZR);
+      let xMax = Math.max(p.z0Mm + 1.2 * zR, z1 + Math.abs(p.f1Mm), z2 + Math.abs(p.f2Mm), zNew + 1.2 * postZR);
+      if (xMax - xMin < Math.max(Math.abs(p.f1Mm), Math.abs(p.f2Mm), 10) * 2) {
+        const mid = 0.5 * (xMin + xMax);
+        const half = Math.max(Math.abs(p.f1Mm), Math.abs(p.f2Mm), 10);
+        xMin = mid - half;
+        xMax = mid + half;
+      }
+
+      const sampleN = 900;
+      const lensGap = Math.max((xMax - xMin) / sampleN, 1e-9);
+      const segments = [[], [], []];
+      const all = [];
+      let yMax = 0;
+
+      function wFromQ(qAtSegmentStartRe, qAtSegmentStartIm, z, zStart) {
+        const qRe = qAtSegmentStartRe + (z - zStart);
+        const qIm = qAtSegmentStartIm;
+        const invDen = qRe * qRe + qIm * qIm;
+        const imagInv = -qIm / invDen;
+        const wSq = -lambda / (Math.PI * imagInv);
+        return wSq > 0 ? Math.sqrt(wSq) : NaN;
+      }
+
+      function add(segmentIndex, z, w) {
+        if (!Number.isFinite(z) || !Number.isFinite(w)) return;
+        segments[segmentIndex].push({ z, w });
+        all.push({ z, w });
+        yMax = Math.max(yMax, w);
+      }
+
+      for (let i = 0; i < sampleN; i++) {
+        const t = i / (sampleN - 1);
+        const z = xMin + t * (xMax - xMin);
+        if (Math.abs(z - z1) <= lensGap || Math.abs(z - z2) <= lensGap) continue;
+
+        if (z < z1) {
+          const w = w0 * Math.sqrt(1 + Math.pow((z - p.z0Mm) / zR, 2));
+          add(0, z, w);
+        } else if (z < z2) {
+          const w = wFromQ(selected.q1PlusRe, selected.q1PlusIm, z, z1);
+          add(1, z, w);
+        } else {
+          const w = postW0 * Math.sqrt(1 + Math.pow((z - zNew) / postZR, 2));
+          add(2, z, w);
+        }
+      }
+
+      if (all.length < 2 || !(yMax > 0)) {
+        drawMessage(canvas, "No stable beam-envelope points are available after skipping the lens planes.");
+        return;
+      }
+
+      yMax *= 1.18;
+      const plot = { left: 76, right: 24, top: 24, bottom: 55, fullWidth: width, fullHeight: height };
+      plot.w = width - plot.left - plot.right;
+      plot.h = height - plot.top - plot.bottom;
+      const xToPx = x => plot.left + (x - xMin) / (xMax - xMin) * plot.w;
+      const yToPx = y => plot.top + (yMax - y) / (2 * yMax) * plot.h;
+
+      ctx.save();
+      ctx.strokeStyle = "#edf1f7";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      for (const x of niceTicks(xMin, xMax, 6)) {
+        const px = xToPx(x);
+        ctx.beginPath();
+        ctx.moveTo(px, plot.top);
+        ctx.lineTo(px, plot.top + plot.h);
+        ctx.stroke();
+        ctx.fillText(formatNumber(x, 1), px, plot.top + plot.h + 9);
+      }
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (const y of niceTicks(-yMax, yMax, 7)) {
+        const py = yToPx(y);
+        ctx.beginPath();
+        ctx.moveTo(plot.left, py);
+        ctx.lineTo(plot.left + plot.w, py);
+        ctx.stroke();
+        ctx.fillText(formatNumber(y * 1000, 0), plot.left - 9, py);
+      }
+      ctx.strokeStyle = "#cdd6e3";
+      ctx.strokeRect(plot.left, plot.top, plot.w, plot.h);
+      ctx.fillStyle = "#344054";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.font = "13px ui-sans-serif, system-ui";
+      ctx.fillText("z / mm", plot.left + plot.w / 2, height - 7);
+      ctx.save();
+      ctx.translate(14, plot.top + plot.h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("Beam radius w / μm", 0, 0);
+      ctx.restore();
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = "#aab4c3";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(plot.left, yToPx(0));
+      ctx.lineTo(plot.left + plot.w, yToPx(0));
+      ctx.stroke();
+      ctx.restore();
+
+      function drawEnvelopeSegment(segment) {
+        if (segment.length < 2) return;
+        ctx.beginPath();
+        for (let i = 0; i < segment.length; i++) {
+          const pt = segment[i];
+          const px = xToPx(pt.z);
+          const py = yToPx(pt.w);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        for (let i = segment.length - 1; i >= 0; i--) {
+          const pt = segment[i];
+          ctx.lineTo(xToPx(pt.z), yToPx(-pt.w));
+        }
+        ctx.closePath();
+        ctx.fillStyle = "rgba(49, 94, 251, 0.10)";
+        ctx.fill();
+
+        ctx.strokeStyle = "#315efb";
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        segment.forEach((pt, i) => {
+          const px = xToPx(pt.z), py = yToPx(pt.w);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+
+        ctx.beginPath();
+        segment.forEach((pt, i) => {
+          const px = xToPx(pt.z), py = yToPx(-pt.w);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+      }
+
+      ctx.save();
+      segments.forEach(drawEnvelopeSegment);
+      ctx.restore();
+
+      function drawVertical(z, color, label, dash = []) {
+        const px = xToPx(z);
+        if (px < plot.left || px > plot.left + plot.w) return;
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        ctx.moveTo(px, plot.top);
+        ctx.lineTo(px, plot.top + plot.h);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = "12px ui-sans-serif, system-ui";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(label, px, plot.top + 7);
+        ctx.restore();
+      }
+
+      drawVertical(z1, "#e8710a", "Lens 1", []);
+      drawVertical(z2, "#8b5cf6", "Lens 2", []);
+      drawVertical(p.z0Mm, "#667085", "incident waist", [5, 5]);
+      drawVertical(zNew, "#0f9f78", "final waist", [5, 5]);
+    }
+
+    function calculateAndDraw() {
+      const p = readParams();
+      const errors = validate(p);
+      setError(errors);
+      if (errors.length) {
+        setWarning([]);
+        return;
+      }
+
+      lastHeatmapData = makeHeatmapData(p);
+      setWarning(buildWarnings(lastHeatmapData));
+      const q = updateQueryResult();
+
+      drawHeatmap($("waistHeatmap"), lastHeatmapData.z1Values, lastHeatmapData.z2Values, lastHeatmapData.waist, "Final waist radius", "μm", p.queryZ1Mm, p.queryZ2Mm);
+      drawHeatmap($("positionHeatmap"), lastHeatmapData.z1Values, lastHeatmapData.z2Values, lastHeatmapData.pos, "Final waist position", "mm", p.queryZ1Mm, p.queryZ2Mm);
+
+      if (q) drawBeamEnvelope($("beamCanvas"), p, q);
+    }
+
+    function solverScales(p, targetW, targetZ) {
+      return {
+        wScale: Math.max(Math.abs(targetW), 1),
+        zScale: Math.max(Math.abs(targetZ), Math.abs(p.z2MaxMm - p.z2MinMm), 1)
+      };
+    }
+
+    function solverAllowedByBounds(p, z1, z2) {
+      if (!Number.isFinite(z1) || !Number.isFinite(z2)) return false;
+      if (z1 < p.z1MinMm || z1 > p.z1MaxMm) return false;
+      if (z2 < p.z2MinMm || z2 > p.z2MaxMm) return false;
+      if (p.enforceOrder && z2 <= z1 + p.minSeparationMm) return false;
+      return true;
+    }
+
+    function solverResidual(p, z1, z2, targetW, targetZ) {
+      if (!solverAllowedByBounds(p, z1, z2)) return null;
+      const r = calculateTwo(p, z1, z2);
+      if (!r.validForPlot) return null;
+      const { wScale, zScale } = solverScales(p, targetW, targetZ);
+      const f1 = (r.wNewUm - targetW) / wScale;
+      const f2 = (r.zNew - targetZ) / zScale;
+      const norm = Math.sqrt(f1 * f1 + f2 * f2);
+      if (!Number.isFinite(norm)) return null;
+      return { F: [f1, f2], norm, r };
+    }
+
+    function finiteDifferenceColumn(p, z1, z2, targetW, targetZ, variableIndex, h, base) {
+      const zp = variableIndex === 0 ? [z1 + h, z2] : [z1, z2 + h];
+      const zm = variableIndex === 0 ? [z1 - h, z2] : [z1, z2 - h];
+      const rp = solverResidual(p, zp[0], zp[1], targetW, targetZ);
+      const rm = solverResidual(p, zm[0], zm[1], targetW, targetZ);
+
+      if (rp && rm) {
+        return [
+          (rp.F[0] - rm.F[0]) / (2 * h),
+          (rp.F[1] - rm.F[1]) / (2 * h)
+        ];
+      }
+      if (rp) {
+        return [
+          (rp.F[0] - base.F[0]) / h,
+          (rp.F[1] - base.F[1]) / h
+        ];
+      }
+      if (rm) {
+        return [
+          (base.F[0] - rm.F[0]) / h,
+          (base.F[1] - rm.F[1]) / h
+        ];
+      }
+      return null;
+    }
+
+    function solverJacobian(p, z1, z2, targetW, targetZ, base) {
+      const span1 = Math.max(Math.abs(p.z1MaxMm - p.z1MinMm), 1);
+      const span2 = Math.max(Math.abs(p.z2MaxMm - p.z2MinMm), 1);
+      const h1 = Math.max(1e-5, span1 * 1e-7, Math.abs(z1) * 1e-7);
+      const h2 = Math.max(1e-5, span2 * 1e-7, Math.abs(z2) * 1e-7);
+      const c1 = finiteDifferenceColumn(p, z1, z2, targetW, targetZ, 0, h1, base);
+      const c2 = finiteDifferenceColumn(p, z1, z2, targetW, targetZ, 1, h2, base);
+      if (!c1 || !c2) return null;
+      return [
+        [c1[0], c2[0]],
+        [c1[1], c2[1]]
+      ];
+    }
+
+    function solveLevenbergStep(J, F, lambda) {
+      const j11 = J[0][0], j12 = J[0][1];
+      const j21 = J[1][0], j22 = J[1][1];
+
+      const a = j11 * j11 + j21 * j21 + lambda;
+      const b = j11 * j12 + j21 * j22;
+      const c = j12 * j12 + j22 * j22 + lambda;
+      const g1 = j11 * F[0] + j21 * F[1];
+      const g2 = j12 * F[0] + j22 * F[1];
+      const det = a * c - b * b;
+
+      if (!Number.isFinite(det) || Math.abs(det) < 1e-24) return null;
+      return [
+        (-c * g1 + b * g2) / det,
+        ( b * g1 - a * g2) / det
+      ];
+    }
+
+    function clampToRange(x, lo, hi) {
+      return Math.max(lo, Math.min(hi, x));
+    }
+
+    function solveInverseNewton(p, targetW, targetZ) {
+      let z1 = p.solverGuessZ1Mm;
+      let z2 = p.solverGuessZ2Mm;
+      let lambda = 1e-6;
+      const tolerance = p.solverTolerance;
+      const maxIter = Math.round(p.solverMaxIter);
+      const trace = [];
+
+      if (!solverAllowedByBounds(p, z1, z2)) {
+        z1 = clampToRange(z1, p.z1MinMm, p.z1MaxMm);
+        z2 = clampToRange(z2, p.z2MinMm, p.z2MaxMm);
+        if (p.enforceOrder && z2 <= z1 + p.minSeparationMm) {
+          z2 = clampToRange(z1 + p.minSeparationMm + 1e-6, p.z2MinMm, p.z2MaxMm);
+        }
+      }
+
+      let current = solverResidual(p, z1, z2, targetW, targetZ);
+      if (!current) {
+        return {
+          converged: false,
+          reason: "The initial guess is outside the valid optical region. Move the initial guess away from lens-order violations or singular points.",
+          iterations: 0,
+          r: null,
+          norm: Infinity,
+          trace
+        };
+      }
+
+      let best = { z1, z2, current };
+      for (let iter = 0; iter < maxIter; iter++) {
+        trace.push({ iter, z1, z2, norm: current.norm });
+        if (current.norm <= tolerance) {
+          return { converged: true, reason: "Converged", iterations: iter, r: current.r, norm: current.norm, trace };
+        }
+
+        const J = solverJacobian(p, z1, z2, targetW, targetZ, current);
+        if (!J) {
+          return { converged: false, reason: "Failed to build a finite-difference Jacobian near the current point.", iterations: iter, r: best.current.r, norm: best.current.norm, trace };
+        }
+
+        let accepted = false;
+        for (let lmTry = 0; lmTry < 12 && !accepted; lmTry++) {
+          const step = solveLevenbergStep(J, current.F, lambda);
+          if (!step || !step.every(Number.isFinite)) {
+            lambda *= 10;
+            continue;
+          }
+
+          for (let line = 0; line < 18; line++) {
+            const alpha = Math.pow(0.5, line);
+            const candZ1 = z1 + alpha * step[0];
+            const candZ2 = z2 + alpha * step[1];
+            const cand = solverResidual(p, candZ1, candZ2, targetW, targetZ);
+            if (cand && cand.norm < current.norm) {
+              z1 = candZ1;
+              z2 = candZ2;
+              current = cand;
+              if (current.norm < best.current.norm) best = { z1, z2, current };
+              lambda = Math.max(lambda * 0.3, 1e-14);
+              accepted = true;
+              break;
+            }
+          }
+
+          if (!accepted) lambda *= 10;
+        }
+
+        if (!accepted) {
+          return { converged: false, reason: "No Newton/Levenberg step reduced the residual. Try a closer initial guess or check whether the target is reachable with these focal lengths and bounds.", iterations: iter + 1, r: best.current.r, norm: best.current.norm, trace };
+        }
+
+        const last = trace[trace.length - 1];
+        const dzNorm = Math.hypot(z1 - last.z1, z2 - last.z2);
+        const spanNorm = Math.max(Math.abs(p.z1MaxMm - p.z1MinMm), Math.abs(p.z2MaxMm - p.z2MinMm), 1);
+        if (dzNorm / spanNorm < 1e-13) {
+          break;
+        }
+      }
+
+      return {
+        converged: best.current.norm <= tolerance,
+        reason: best.current.norm <= tolerance ? "Converged" : "Reached the maximum iteration count before satisfying the tolerance.",
+        iterations: trace.length,
+        r: best.current.r,
+        norm: best.current.norm,
+        trace
+      };
+    }
+
+    function solveInverse() {
+      const box = $("solverResult");
+      const p = readParams();
+      const errors = validate(p);
+      setError(errors);
+      if (errors.length) {
+        box.innerHTML = `<strong>Solver Result</strong><code>Invalid input. Please check the parameters above.</code>`;
+        return;
+      }
+
+      const targetW = p.targetWUm;
+      const targetZ = p.targetZMm;
+      const solution = solveInverseNewton(p, targetW, targetZ);
+
+      if (!solution.r || !Number.isFinite(solution.norm)) {
+        box.innerHTML = `
+          <strong>Solver Result</strong>
+          <code>No valid Newton solution was obtained.</code>
+          <code>${solution.reason}</code>
+        `;
+        return;
+      }
+
+      const wErr = solution.r.wNewUm - targetW;
+      const zErr = solution.r.zNew - targetZ;
+      $("queryZ1Mm").value = solution.r.z1.toFixed(9);
+      $("queryZ2Mm").value = solution.r.z2.toFixed(9);
+      $("solverGuessZ1Mm").value = solution.r.z1.toFixed(9);
+      $("solverGuessZ2Mm").value = solution.r.z2.toFixed(9);
+      updateQueryResult();
+      if (lastHeatmapData) {
+        drawHeatmap($("waistHeatmap"), lastHeatmapData.z1Values, lastHeatmapData.z2Values, lastHeatmapData.waist, "Final waist radius", "μm", solution.r.z1, solution.r.z2);
+        drawHeatmap($("positionHeatmap"), lastHeatmapData.z1Values, lastHeatmapData.z2Values, lastHeatmapData.pos, "Final waist position", "mm", solution.r.z1, solution.r.z2);
+      }
+
+      const status = solution.converged ? "Converged" : "Stopped before tolerance";
+      box.innerHTML = `
+        <strong>Solver Result</strong>
+        <code>Status: ${status}; iterations = ${solution.iterations}; normalized residual = ${formatNumber(solution.norm, 10)}</code>
+        <code><i>z</i><sub>L1</sub> = ${formatNumber(solution.r.z1, 9)} mm</code>
+        <code><i>z</i><sub>L2</sub> = ${formatNumber(solution.r.z2, 9)} mm</code>
+        <code>Achieved <i>w</i><sub>new</sub> = ${formatNumber(solution.r.wNewUm, 9)} μm, &nbsp; error = ${formatNumber(wErr, 9)} μm</code>
+        <code>Achieved <i>z</i><sub>new</sub> = ${formatNumber(solution.r.zNew, 9)} mm, &nbsp; error = ${formatNumber(zErr, 9)} mm</code>
+        <code>${solution.reason}</code>
+      `;
+    }
+
+    function reset() {
+      for (const [k, v] of Object.entries(defaults)) {
+        if (k === "enforceOrder") $(k).checked = v;
+        else $(k).value = v;
+      }
+      calculateAndDraw();
+    }
+
+    $("calcBtn").addEventListener("click", calculateAndDraw);
+    $("resetBtn").addEventListener("click", reset);
+    $("queryBtn").addEventListener("click", () => {
+      const q = updateQueryResult();
+      const p = readParams();
+      if (lastHeatmapData) {
+        drawHeatmap($("waistHeatmap"), lastHeatmapData.z1Values, lastHeatmapData.z2Values, lastHeatmapData.waist, "Final waist radius", "μm", p.queryZ1Mm, p.queryZ2Mm);
+        drawHeatmap($("positionHeatmap"), lastHeatmapData.z1Values, lastHeatmapData.z2Values, lastHeatmapData.pos, "Final waist position", "mm", p.queryZ1Mm, p.queryZ2Mm);
+      }
+      if (q) drawBeamEnvelope($("beamCanvas"), p, q);
+    });
+    $("solveBtn").addEventListener("click", solveInverse);
+
+    for (const k of Object.keys(defaults)) {
+      if (k === "enforceOrder") continue;
+      $(k).addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          if (k === "queryZ1Mm" || k === "queryZ2Mm") $("queryBtn").click();
+          else if (k === "targetWUm" || k === "targetZMm" || k === "solverGuessZ1Mm" || k === "solverGuessZ2Mm" || k === "solverTolerance" || k === "solverMaxIter") solveInverse();
+          else calculateAndDraw();
+        }
+      });
+    }
+
+    window.addEventListener("resize", () => {
+      clearTimeout(window.__resizeTimer);
+      window.__resizeTimer = setTimeout(calculateAndDraw, 120);
+    });
+
+    calculateAndDraw();
+  </script>
+</body>
+</html>

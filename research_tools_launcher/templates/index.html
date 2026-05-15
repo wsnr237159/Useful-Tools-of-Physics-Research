@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Launcher - {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="launcher">
+  <aside class="start-sidebar" aria-label="Tool categories">
+    <div class="sidebar-title">Categories</div>
+    <nav class="category-list">
+      {% for category in config.categories %}
+        <a
+          class="category-item {% if category.id == selected_category_id %}active{% endif %}"
+          href="{{ url_for('index', category=category.id) }}"
+        >
+          <span class="category-icon">{{ category.name[:1] }}</span>
+          <span>{{ category.name }}</span>
+        </a>
+      {% endfor %}
+    </nav>
+  </aside>
+
+  <section class="tool-panel">
+    <form class="search-row" action="{{ url_for('index') }}" method="get">
+      <label class="sr-only" for="q">Search tools</label>
+      <input id="q" name="q" type="search" placeholder="Search tools" value="{{ query }}">
+      <button type="submit">Search</button>
+      {% if query %}
+        <a class="secondary-button" href="{{ url_for('index') }}">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="panel-heading">
+      {% if query %}
+        <div>
+          <h1>Search Results</h1>
+          <p>Tools found for "{{ query }}".</p>
+        </div>
+      {% else %}
+        {% set selected_category = config.categories_by_id[selected_category_id] %}
+        <div>
+          <h1>{{ selected_category.name }}</h1>
+          <p>{{ sections|length }} group{{ "" if sections|length == 1 else "s" }}.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if sections %}
+      <div class="group-stack">
+        {% for section in sections %}
+          <section class="group-section">
+            <div class="group-heading">
+              <div>
+                {% if query %}
+                  <span class="group-path">{{ section.category.name }}</span>
+                {% endif %}
+                <h2>{{ section.group.name }}</h2>
+              </div>
+              <span>{{ section.tools|length }} tool{{ "" if section.tools|length == 1 else "s" }}</span>
+            </div>
+
+            <div class="tool-grid">
+              {% for tool in section.tools %}
+                {% if tool.kind == "page" %}
+                  <a
+                    class="tool-tile"
+                    href="{{ url_for('page_tool', tool_id=tool.id) }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                {% else %}
+                  <a class="tool-tile" href="{{ url_for('tool_detail', tool_id=tool.id) }}">
+                {% endif %}
+                    <span class="tool-icon">{{ tool.icon or tool.name[:1] }}</span>
+                    <span class="tool-copy">
+                      <strong>{{ tool.name }}</strong>
+                      <small>{{ tool.description }}</small>
+                      <span class="tool-kind">{{ "HTML page" if tool.kind == "page" else "Script tool" }}</span>
+                    </span>
+                  </a>
+              {% endfor %}
+            </div>
+          </section>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <h2>No tools found</h2>
+        <p>Add tools to <code>tools.toml</code> or change your search query.</p>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

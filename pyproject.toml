@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-research-tools-launcher"
+version = "0.1.0"
+description = "A local Flask launcher for research and study scripts."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "Flask>=3.0,<4",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=7",
+]
+
+[project.scripts]
+research-tools-launcher = "research_tools_launcher.app:main"
+
+[tool.setuptools]
+packages = ["research_tools_launcher"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+research_tools_launcher = ["templates/*.html", "static/*.css"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
